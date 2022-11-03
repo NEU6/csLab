@@ -12,7 +12,6 @@ module count_10(
         end
         else if (en) begin
             if (count == 4'd8) begin
-                count <= 4'b0;
                 co <= 1'b1;
                 count <= count + 1'b1;
             end
