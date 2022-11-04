@@ -22,9 +22,10 @@ module count_60(
         .clk   (clk   ),
         .en    (co10  ),
         .count (count6 ),
-        .co    (co    )
+        .co    (co6    )
     );
 
+and co(co,co6,co10); 
 assign count = {count6,count10}; 
 
 endmodule
