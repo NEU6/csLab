@@ -17,6 +17,6 @@ module count60_tb(
         en = 1;
     end
     
-    always #10 clk = ~clk;
+    always #5 clk = ~clk;
     count_60 count60(rst,clk,en,count,co);    
 endmodule
