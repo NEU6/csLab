@@ -7,12 +7,12 @@ module count_6(
 );
     always @ (posedge clk) begin
         if (rst) begin
-            count <= 4'b0;
+            count <= 3'b0;
             co <= 1'b0;
         end
         else if (en) begin
-            if (count == 4'd5) begin
-                count <= 4'b0;
+            if (count == 3'd5) begin
+                count <= 3'b0;
                 co <= 1'b1;
             end
             else begin
