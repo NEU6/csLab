@@ -11,9 +11,13 @@ module count_6(
             co <= 1'b0;
         end
         else if (en) begin
-            if (count == 3'd5) begin
-                count <= 3'b0;
+             if (count == 3'd4) begin
                 co <= 1'b1;
+                count <= count + 1'b1;
+            end
+            else if (count == 3'd5) begin
+                count <= 3'b0;
+                co <= 1'b0; 
             end
             else begin
                 count <= count + 1'b1;
