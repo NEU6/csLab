@@ -4,7 +4,7 @@ module count6_tb(
     reg rst;
     reg clk;
     reg en;
-    wire [2:0] count;
+    wire [3:0] count;
     wire co;
     initial begin
         rst = 0;

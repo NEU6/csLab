@@ -2,17 +2,17 @@ module count_6(
     input wire rst,
     input wire clk,
     input wire en,
-    output reg [2:0] count,
+    output reg [3:0] count,
     output reg co
 );
     always @ (posedge clk) begin
         if (rst) begin
-            count <= 3'b0;
+            count <= 4'b0;
             co <= 1'b0;
         end
         else if (en) begin
-            if (count == 3'd5) begin
-                count <= 3'b0;
+            if (count == 4'd5) begin
+                count <= 4'b0;
                 co <= 1'b1;
             end
             else begin
