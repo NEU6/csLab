@@ -67,11 +67,11 @@ module mycpu_core(
         //数据相关新线
         .ex_to_id_bus (ex_to_id_bus),
         .mem_to_id_bus (mem_to_id_bus),
-        .wb_to_id_bus (wb_to_id_bus)
+        .wb_to_id_bus (wb_to_id_bus),
         //气泡
         .is_lw (is_lw),
         //气泡请求
-        .stall_from_id (stall_from_id)
+        .stallreq_from_id (stallreq_from_id)
     );
 
     EX u_EX(
@@ -117,7 +117,7 @@ module mycpu_core(
 
     CTRL u_CTRL(
         //气泡请求
-        .stall_from_id  (stall_from_id),
+        .stallreq_from_id  (stallreq_from_id),
     	.rst   (rst   ),
         .stall (stall )
     );
