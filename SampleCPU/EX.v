@@ -15,7 +15,7 @@ module EX(
     output wire [31:0] data_sram_wdata,
 
     //数据相关新线
-    output wire [`EX_TO_ID_WD-1:0] ex_to_id_bus,
+    output wire [`EX_TO_ID_WD-1:0] ex_to_id_bus
 );
 
     reg [`ID_TO_EX_WD-1:0] id_to_ex_bus_r;
