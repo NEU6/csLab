@@ -20,7 +20,12 @@ module ID(
     //数据相关新线
     input wire [`EX_TO_ID_WD-1:0] ex_to_id_bus,
     input wire [`MEM_TO_ID_WD-1:0] mem_to_id_bus,
-    input wire [`WB_TO_ID_WD-1:0] wb_to_id_bus
+    input wire [`WB_TO_ID_WD-1:0] wb_to_id_bus,
+
+    //气泡
+    input wire is_lw,
+    //暂停请求
+    output wire stallreq_from_id
 );
 
     reg [`IF_TO_ID_WD-1:0] if_to_id_bus_r;
@@ -31,6 +36,9 @@ module ID(
     wire wb_rf_we;
     wire [4:0] wb_rf_waddr;
     wire [31:0] wb_rf_wdata;
+
+
+
 
     always @ (posedge clk) begin
         if (rst) begin
@@ -46,8 +54,23 @@ module ID(
             if_to_id_bus_r <= if_to_id_bus;
         end
     end
-    
-    assign inst = inst_sram_rdata;
+
+    //stall相关
+    reg inst_stall_en;
+    reg[31:0] inst_stall;
+
+    //延迟槽
+    always @ (posedge clk) begin
+        inst_stall_en<=`NoStop;
+        inst_stall<=32'b0;
+        if(stall[1]==`Stop)begin
+            inst_stall_en<=`Stop;
+            inst_stall<=inst;
+        end
+    end
+
+    //判断当前指令
+    assign inst = inst_stall_en?inst_stall:inst_sram_rdata;
     assign {
         ce,
         id_pc
@@ -113,6 +136,9 @@ module ID(
     assign base = inst[25:21];
     assign offset = inst[15:0];
     assign sel = inst[2:0];
+
+    //气泡请求
+    assign stallreq_from_id=(is_lw==1'b1&((rs==ex_to_id_bus[36:32])|(rt==ex_to_id_bus[36:32])));
 
     wire inst_ori, inst_lui, inst_addiu, inst_beq;
     //新增指令

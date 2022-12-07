@@ -15,7 +15,10 @@ module EX(
     output wire [31:0] data_sram_wdata,
 
     //数据相关新线
-    output wire [`EX_TO_ID_WD-1:0] ex_to_id_bus
+    output wire [`EX_TO_ID_WD-1:0] ex_to_id_bus,
+
+    //气泡
+    output wire is_lw
 );
 
     reg [`ID_TO_EX_WD-1:0] id_to_ex_bus_r;
@@ -112,6 +115,9 @@ module EX(
         rf_waddr,       // 36:32
         ex_result       // 31:0
     };
+
+    //气泡
+    assign is_lw=(inst[31:26]==6'b10_0011)?1'b1:1'b0; 
     
     // MUL part
     wire [63:0] mul_result;
