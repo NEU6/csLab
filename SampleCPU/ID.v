@@ -15,12 +15,12 @@ module ID(
 
     output wire [`ID_TO_EX_WD-1:0] id_to_ex_bus,
 
-    output wire [`BR_WD-1:0] br_bus 
+    output wire [`BR_WD-1:0] br_bus,
 
     //数据相关新线
-    input wire [`EX_TO_ID_WD-1:0] ex_to_id_bus
-    input wire [`MEN_TO_ID_WD-1:0] mem_to_id_bus
-    input wire [`WB_TO_ID_WD-1:0] wb_to_id_bus
+    input wire [`EX_TO_ID_WD-1:0] ex_to_id_bus,
+    input wire [`MEN_TO_ID_WD-1:0] mem_to_id_bus,
+    input wire [`WB_TO_ID_WD-1:0] wb_to_id_bus,
 );
 
     reg [`IF_TO_ID_WD-1:0] if_to_id_bus_r;
