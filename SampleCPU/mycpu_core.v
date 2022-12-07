@@ -69,7 +69,7 @@ module mycpu_core(
         .mem_to_id_bus (mem_to_id_bus),
         .wb_to_id_bus (wb_to_id_bus)
         //气泡
-        .is_lw (is_lw)
+        .is_lw (is_lw),
         //气泡请求
         .stall_from_id (stall_from_id)
     );
@@ -85,7 +85,7 @@ module mycpu_core(
         .data_sram_addr  (data_sram_addr  ),
         .data_sram_wdata (data_sram_wdata ),
         //数据相关新线
-        .ex_to_id_bus   (ex_to_id_bus    )
+        .ex_to_id_bus   (ex_to_id_bus    ),
         //气泡
         .is_lw (is_lw)
     );
