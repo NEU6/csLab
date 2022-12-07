@@ -9,49 +9,34 @@ module EX(
 
     input wire [`ID_TO_EX_WD-1:0] id_to_ex_bus,
     
-    input wire [`LoadBus-1:0] id_load_bus,
-    input wire [`SaveBus-1:0] id_save_bus,
-
     output wire [`EX_TO_MEM_WD-1:0] ex_to_mem_bus,
     
-    output wire [`EX_TO_RF_WD-1:0] ex_to_rf_bus,
-
-
-    //-------
-    output wire stallreq_for_ex,
-    
-    output wire [3:0] data_ram_sel,
     output wire data_sram_en,
     output wire [3:0] data_sram_wen,
     output wire [31:0] data_sram_addr,
     output wire [31:0] data_sram_wdata,
 
     output wire [`EX_TO_ID_WD-1:0] ex_to_id_bus,//ex到ID段，数据相关
-    output wire [`LoadBus-1:0] ex_load_bus
+
+    output wire isLS,
+    output wire stallreq_from_ex,
+    output wire div_ready_to_id
 );
 
     reg [`ID_TO_EX_WD-1:0] id_to_ex_bus_r;
-    reg [`LoadBus-1:0] id_load_bus_r;
-    reg [`SaveBus-1:0] id_save_bus_r;
 
     always @ (posedge clk) begin
         if (rst) begin
             id_to_ex_bus_r <= `ID_TO_EX_WD'b0;
-            id_load_bus_r <= `LoadBus'b0;
-            id_save_bus_r <= `SaveBus'b0;
         end
         // else if (flush) begin
         //     id_to_ex_bus_r <= `ID_TO_EX_WD'b0;
         // end
         else if (stall[2]==`Stop && stall[3]==`NoStop) begin
             id_to_ex_bus_r <= `ID_TO_EX_WD'b0;
-            id_load_bus_r <= `LoadBus'b0;
-            id_save_bus_r <= `SaveBus'b0;
         end
         else if (stall[2]==`NoStop) begin
             id_to_ex_bus_r <= id_to_ex_bus;
-            id_load_bus_r <= id_load_bus;
-            id_save_bus_r <= id_save_bus;
         end
     end
 
@@ -61,18 +46,16 @@ module EX(
     wire [3:0] sel_alu_src2;
     wire data_ram_en;
     wire [3:0] data_ram_wen;
+    wire [3:0] data_ram_readen;
     wire rf_we;
     wire [4:0] rf_waddr;
     wire sel_rf_res;
     wire [31:0] rf_rdata1, rf_rdata2;
     reg is_in_delayslot;
     
-    wire inst_lb, inst_lbu, inst_lh, inst_lhu, inst_lw;
-    wire inst_sb, inst_sh, inst_sw;
 
     assign {
-        //----------
-        mem_op,         // 163:159
+        data_ram_readen,  
         ex_pc,          // 148:117
         inst,           // 116:85
         alu_op,         // 84:83   
@@ -102,6 +85,7 @@ module EX(
     assign alu_src2 = sel_alu_src2[1] ? imm_sign_extend :
                       sel_alu_src2[2] ? 32'd8 :
                       sel_alu_src2[3] ? imm_zero_extend : rf_rdata2;
+
     //传到alu进行操作 alu.v
     alu u_alu(
     	.alu_control (alu_op ),
@@ -112,49 +96,15 @@ module EX(
 
     assign ex_result = alu_result;
 
-    assign {
-        inst_lb,
-        inst_lbu,
-        inst_lh,
-        inst_lhu,
-        inst_lw
-    } = id_load_bus_r;
-    assign {
-        inst_sb,
-        inst_sh,
-        inst_sw
-    } = id_save_bus_r;
-    assign data_ram_sel = inst_lw | inst_sw ? 4'b1111 : 4'b0000;
-    assign data_sram_en = data_ram_en;
-    assign data_sram_wen = {4{data_ram_wen}} & data_ram_sel;
-    assign data_sram_addr = ex_result;
-    assign data_sram_wdata = rf_rdata2;
+    assign isLS=(inst[31:26]==6'b10_0011)?1'b1:1'b0;  
 
-    assign ex_to_mem_bus = {
-        ex_pc,          // 75:44
-        data_ram_en,    // 43
-        data_ram_wen,   // 42:39
-        sel_rf_res,     // 38
-        rf_we,          // 37
-        rf_waddr,       // 36:32
-        ex_result       // 31:0，得到的结果
-    };
+
+
 
     //数据相关，传到临时寄存器的三个变量，
     
-    assign ex_to_id_bus={
-        rf_we,
-        rf_waddr,
-        ex_result,
-    };
 
-    assign ex_load_bus = {
-        inst_lb,
-        inst_lbu,
-        inst_lh,
-        inst_lhu,
-        inst_lw
-    };
+
 
     // MUL part
     wire [63:0] mul_result;
@@ -172,9 +122,11 @@ module EX(
     // DIV part
     wire [63:0] div_result;
     wire inst_div, inst_divu;
+    assign inst_div    = inst[31:26]==6'b00_0000&inst[15:6]==10'b00000_00000&inst[5:0]==6'b01_1010;
+    assign inst_divu   = inst[31:26]==6'b00_0000&inst[15:6]==10'b00000_00000&inst[5:0]==6'b01_1011;
     wire div_ready_i;
-    reg stallreq_for_div;
-    assign stallreq_for_ex = stallreq_for_div;
+
+    assign stallreq_from_ex = (if_div) & div_ready_i==1'b0;;
 
     reg [31:0] div_opdata1_o;
     reg [31:0] div_opdata2_o;
@@ -261,6 +213,23 @@ module EX(
     end
 
     // mul_result 和 div_result 可以直接使用
+
+     assign ex_to_mem_bus = {
+        data_ram_readen,         
+        ex_pc,          // 75:44
+        data_ram_en,    // 43
+        data_ram_wen,   // 42:39
+        sel_rf_res,     // 38
+        rf_we,          // 37
+        rf_waddr,       // 36:32
+        ex_result       // 31:0
+    };   
+
+    assign ex_to_id_bus={
+        rf_we,
+        rf_waddr,
+        ex_result,
+    };
     
-    
+
 endmodule

@@ -9,6 +9,7 @@ module WB(
 
     output wire [`WB_TO_RF_WD-1:0] wb_to_rf_bus,
     output wire [`WB_TO_ID_WD-1:0] wb_to_id_bus,
+
     output wire [31:0] debug_wb_pc,
     output wire [3:0] debug_wb_rf_wen,
     output wire [4:0] debug_wb_rf_wnum,
@@ -38,12 +39,7 @@ module WB(
     wire [31:0] rf_wdata;
 
 
-//----------------
-    wire hi_we;         
-    wire lo_we;         
-    wire [31:0] hi_ex; 
-    wire [31:0] lo_ex; 
-//--------------------
+
 
     assign {
         wb_pc,
@@ -53,7 +49,6 @@ module WB(
     } = mem_to_wb_bus_r;
 
     assign wb_to_rf_bus = {
-
         rf_we,
         rf_waddr,
         rf_wdata
