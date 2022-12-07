@@ -115,6 +115,8 @@ module ID(
     assign sel = inst[2:0];
 
     wire inst_ori, inst_lui, inst_addiu, inst_beq;
+    //新增指令
+    wire inst_subu,
 
     wire op_add, op_sub, op_slt, op_sltu;
     wire op_and, op_nor, op_or, op_xor;
@@ -146,10 +148,13 @@ module ID(
     assign inst_addiu   = op_d[6'b00_1001];
     assign inst_beq     = op_d[6'b00_0100];
 
+    //新增指令
+    assign inst_subu    = op_d[6'b00_0000]&sa==5'b00000&func_d[6'b10_0011];
+
 
     //取操作数
     // rs to reg1
-    assign sel_alu_src1[0] = inst_ori | inst_addiu;
+    assign sel_alu_src1[0] = inst_ori | inst_addiu | inst_subu;
 
     // pc to reg1
     assign sel_alu_src1[1] = 1'b0;
@@ -159,7 +164,7 @@ module ID(
 
     
     // rt to reg2
-    assign sel_alu_src2[0] = 1'b0;
+    assign sel_alu_src2[0] = inst_subu;
     
     // imm_sign_extend to reg2
     assign sel_alu_src2[1] = inst_lui | inst_addiu;
@@ -190,7 +195,7 @@ module ID(
                      op_sll, op_srl, op_sra, op_lui};
 
 
-
+    //存储器相关
     // load and store enable
     assign data_ram_en = 1'b0;
 
@@ -198,14 +203,14 @@ module ID(
     assign data_ram_wen = 1'b0;
 
 
-
+    //写使能信号
     // regfile store enable
-    assign rf_we = inst_ori | inst_lui | inst_addiu;
+    assign rf_we = inst_ori | inst_lui | inst_addiu|inst_subu;
 
 
-
+    //写入到rd
     // store in [rd]
-    assign sel_rf_dst[0] = 1'b0;
+    assign sel_rf_dst[0] = inst_subu;
     // store in [rt] 
     assign sel_rf_dst[1] = inst_ori | inst_lui | inst_addiu;
     // store in [31]
