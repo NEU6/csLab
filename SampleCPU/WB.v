@@ -14,7 +14,7 @@ module WB(
     output wire [4:0] debug_wb_rf_wnum,
     output wire [31:0] debug_wb_rf_wdata,
     //数据相关新线
-    output wire [`WB_TO_ID_WD-1:0] wb_to_id_bus,
+    output wire [`WB_TO_ID_WD-1:0] wb_to_id_bus
 );
 
     reg [`MEM_TO_WB_WD-1:0] mem_to_wb_bus_r;
