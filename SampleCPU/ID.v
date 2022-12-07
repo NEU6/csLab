@@ -116,7 +116,7 @@ module ID(
 
     wire inst_ori, inst_lui, inst_addiu, inst_beq;
     //新增指令
-    wire inst_subu,
+    wire inst_subu;
 
     wire op_add, op_sub, op_slt, op_sltu;
     wire op_and, op_nor, op_or, op_xor;
@@ -178,7 +178,7 @@ module ID(
 
 
     assign op_add = inst_addiu;
-    assign op_sub = 1'b0;
+    assign op_sub = inst_subu;
     assign op_slt = 1'b0;
     assign op_sltu = 1'b0;
     assign op_and = 1'b0;
