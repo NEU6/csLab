@@ -117,6 +117,7 @@ module ID(
     wire inst_ori, inst_lui, inst_addiu, inst_beq;
     //新增指令
     wire inst_subu;
+    wire inst_jr;
 
     wire op_add, op_sub, op_slt, op_sltu;
     wire op_and, op_nor, op_or, op_xor;
@@ -150,7 +151,7 @@ module ID(
 
     //新增指令
     assign inst_subu    = op_d[6'b00_0000]&sa==5'b00000&func_d[6'b10_0011];
-
+    assign inst_jr      = op_d[6'b00_0000]&inst[20:11]==10'b00000_00000&sa==5'b00000&func_d[6'b00_1000];
 
     //取操作数
     // rs to reg1
@@ -253,11 +254,12 @@ module ID(
     assign rs_eq_rt = (rdata1 == rdata2);
 
     //跳转信号
-    assign br_e = inst_beq & rs_eq_rt;
+    assign br_e = inst_beq & rs_eq_rt|inst_jr;
     
     //跳转地址
-    assign br_addr = inst_beq ? (pc_plus_4 + {{14{inst[15]}},inst[15:0],2'b0}) : 32'b0;
-
+    assign br_addr = inst_beq ? (pc_plus_4 + {{14{inst[15]}},inst[15:0],2'b0}) : 32'b0: 
+                    inst_jal?({pc_plus_4[31:28],inst[25:0],2'b0}):
+                    32'b0;
     assign br_bus = {
         br_e,
         br_addr
