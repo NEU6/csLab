@@ -87,7 +87,7 @@ module mycpu_core(
         .data_sram_rdata (data_sram_rdata ),
         .mem_to_wb_bus   (mem_to_wb_bus   ),
         //数据相关新线
-        .MEM_to_id_bus   (mem_to_id_bus    )
+        .mem_to_id_bus   (mem_to_id_bus    )
     );
     
     WB u_WB(
