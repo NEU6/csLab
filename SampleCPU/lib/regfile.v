@@ -24,13 +24,13 @@ module regfile(
     end
 
     //数据相关新线打开
-    wire ex_id_wreg,
-    wire [4:0] ex_id_waddr,
-    wire [31:0] ex_id_wdata,
+    wire ex_id_wreg;
+    wire [4:0] ex_id_waddr;
+    wire [31:0] ex_id_wdata;
     assign {
         ex_id_wreg,
         ex_id_waddr,
-        ex_id_wdata,
+        ex_id_wdata
     }= ex_to_id_bus;
     
     wire mem_id_wreg;
@@ -39,7 +39,7 @@ module regfile(
     assign {
         mem_id_wreg,
         mem_id_waddr,
-        mem_id_wdata,
+        mem_id_wdata
     }=mem_to_id_bus;
    
     wire wb_id_wreg;
@@ -48,7 +48,7 @@ module regfile(
     assign {
         wb_id_wreg,
         wb_id_waddr,
-        wb_id_wdata,
+        wb_id_wdata
     }=wb_to_id_bus;
 
     // read out 1
