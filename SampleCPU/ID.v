@@ -123,6 +123,8 @@ module ID(
     wire inst_sll;
     wire inst_bne;
     wire inst_or;
+    wire inst_lw;
+    wire inst_sw;
 
     wire op_add, op_sub, op_slt, op_sltu;
     wire op_and, op_nor, op_or, op_xor;
@@ -162,11 +164,13 @@ module ID(
     assign inst_sll     = op_d[6'b00_0000]&rs_d[5'b00000]&func_d[6'b00_0000];
     assign inst_bne     = op_d[6'b00_0101];
     assign inst_or      = op_d[6'b00_0000]&(sa==5'b00000)&func_d[6'b10_0101];
+    assign inst_lw      = op_d[6'b10_0011];
+    assign inst_sw      = op_d[6'b10_1011];
 
     //取操作数
     // rs to reg1
     assign sel_alu_src1[0] = inst_ori | inst_addiu | inst_subu|inst_addu |
-                            inst_or;
+                            inst_or|inst_lw |inst_sw;
 
     // pc to reg1
     assign sel_alu_src1[1] = inst_jal;
@@ -176,10 +180,10 @@ module ID(
 
     
     // rt to reg2
-    assign sel_alu_src2[0] = inst_subu|inst_addu|inst_sll|inst_or;
+    assign sel_alu_src2[0] = inst_subu|inst_addu|inst_sll|inst_or|inst_lw ;
     
     // imm_sign_extend to reg2
-    assign sel_alu_src2[1] = inst_lui | inst_addiu;
+    assign sel_alu_src2[1] = inst_lui | inst_addiu|inst_sw;
 
     // 32'b8 to reg2
     assign sel_alu_src2[2] = inst_jal;
@@ -189,7 +193,7 @@ module ID(
 
 
     //选操作逻辑
-    assign op_add = inst_addiu|inst_jal|inst_addu;
+    assign op_add = inst_addiu|inst_jal|inst_addu|inst_lw |inst_sw;
     assign op_sub = inst_subu;
     assign op_slt = 1'b0;
     assign op_sltu = 1'b0;
@@ -209,22 +213,23 @@ module ID(
 
     //存储器相关
     // load and store enable
-    assign data_ram_en = 1'b0;
+    assign data_ram_en = inst_lw |inst_sw;
 
     // write enable
-    assign data_ram_wen = 1'b0;
+    assign data_ram_wen = inst_sw?4'b1111:4'b0000;
 
 
     //写使能信号
     // regfile store enable
-    assign rf_we = inst_ori | inst_lui | inst_addiu|inst_subu|inst_jal|inst_addu|inst_sll|inst_or;
+    assign rf_we = inst_ori | inst_lui | inst_addiu|inst_subu|inst_jal|inst_addu|inst_sll|inst_or|
+                    inst_lw;
 
 
     //写入到rd
     // store in [rd]
     assign sel_rf_dst[0] = inst_subu|inst_addu|inst_sll|inst_or;
     // store in [rt] 
-    assign sel_rf_dst[1] = inst_ori | inst_lui | inst_addiu;
+    assign sel_rf_dst[1] = inst_ori | inst_lui | inst_addiu|inst_lw;
     // store in [31]
     assign sel_rf_dst[2] = inst_jal;
 
