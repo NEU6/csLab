@@ -211,7 +211,7 @@ module ID(
 
     
     // rt to reg2
-    assign sel_alu_src2[0] = inst_subu|inst_addu|inst_sll|inst_orinst_xor|
+    assign sel_alu_src2[0] = inst_subu|inst_addu|inst_sll|inst_or|inst_xor|
                             inst_sltu;
     
     // imm_sign_extend to reg2
