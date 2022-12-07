@@ -19,7 +19,7 @@ module ID(
 
     //数据相关新线
     input wire [`EX_TO_ID_WD-1:0] ex_to_id_bus,
-    input wire [`MEN_TO_ID_WD-1:0] mem_to_id_bus,
+    input wire [`MEM_TO_ID_WD-1:0] mem_to_id_bus,
     input wire [`WB_TO_ID_WD-1:0] wb_to_id_bus,
 );
 

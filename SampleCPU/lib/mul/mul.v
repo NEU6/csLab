@@ -32,7 +32,7 @@ module mul (
 //  end
 //  reset
   
-  //Extended implementation of signed and unsigned multiplication
+  //Extended impleMEMtation of signed and unsigned multiplication
   assign ext_ina = {mul_signed & ina[31], ina};
   assign ext_inb = {mul_signed & inb[31], inb};
     
