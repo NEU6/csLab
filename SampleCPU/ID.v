@@ -259,7 +259,7 @@ module ID(
     assign br_e = inst_beq & rs_eq_rt|inst_jr| inst_jal;
     
     //跳转地址
-    assign br_addr = inst_beq ? (pc_plus_4 + {{14{inst[15]}},inst[15:0],2'b0}) : 32'b0: 
+    assign br_addr = inst_beq ? (pc_plus_4 + {{14{inst[15]}},inst[15:0],2'b0}) :
                     inst_jr?(rdata1):
                     inst_jal?({pc_plus_4[31:28],inst[25:0],2'b0}):
                     32'b0;
