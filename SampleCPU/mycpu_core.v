@@ -30,6 +30,12 @@ module mycpu_core(
     wire [`WB_TO_RF_WD-1:0] wb_to_rf_bus;
     wire [`StallBus-1:0] stall;
 
+
+    //数据相关新线
+    wire [`EX_TO_ID_WD-1:0] ex_to_id_bus;
+    wire [`MEM_TO_ID_WD-1:0] mem_to_id_bus;
+    wire [`WB_TO_ID_WD-1:0] wb_to_id_bus;
+
     IF u_IF(
     	.clk             (clk             ),
         .rst             (rst             ),
@@ -52,7 +58,11 @@ module mycpu_core(
         .inst_sram_rdata (inst_sram_rdata ),
         .wb_to_rf_bus    (wb_to_rf_bus    ),
         .id_to_ex_bus    (id_to_ex_bus    ),
-        .br_bus          (br_bus          )
+        .br_bus          (br_bus          ),
+        //数据相关新线
+        .ex_to_id_bus (ex_to_id_bus),
+        .mem_to_id_bus (mem_to_id_bus),
+        .wb_to_id_bus (wb_to_id_bus)
     );
 
     EX u_EX(
@@ -64,7 +74,9 @@ module mycpu_core(
         .data_sram_en    (data_sram_en    ),
         .data_sram_wen   (data_sram_wen   ),
         .data_sram_addr  (data_sram_addr  ),
-        .data_sram_wdata (data_sram_wdata )
+        .data_sram_wdata (data_sram_wdata ),
+        //数据相关新线
+        .ex_to_id_bus   (ex_to_id_bus    )
     );
 
     MEM u_MEM(
@@ -73,7 +85,9 @@ module mycpu_core(
         .stall           (stall           ),
         .ex_to_mem_bus   (ex_to_mem_bus   ),
         .data_sram_rdata (data_sram_rdata ),
-        .mem_to_wb_bus   (mem_to_wb_bus   )
+        .mem_to_wb_bus   (mem_to_wb_bus   ),
+        //数据相关新线
+        .men_to_id_bus   (mem_to_id_bus    )
     );
     
     WB u_WB(
@@ -85,7 +99,9 @@ module mycpu_core(
         .debug_wb_pc       (debug_wb_pc       ),
         .debug_wb_rf_wen   (debug_wb_rf_wen   ),
         .debug_wb_rf_wnum  (debug_wb_rf_wnum  ),
-        .debug_wb_rf_wdata (debug_wb_rf_wdata )
+        .debug_wb_rf_wdata (debug_wb_rf_wdata ),
+        //数据相关新线
+        .wb_to_id_bus   (wb_to_id_bus    )
     );
 
     CTRL u_CTRL(

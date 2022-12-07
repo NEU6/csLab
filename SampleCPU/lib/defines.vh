@@ -22,3 +22,8 @@
 `define DivResultNotReady 1'b0
 `define DivStart 1'b1
 `define DivStop 1'b0
+
+//数据相关新线
+`define EX_TO_ID_WD 38
+`define MEM_TO_ID_WD 38
+`define WB_TO_ID_WD 38
