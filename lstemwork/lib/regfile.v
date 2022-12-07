@@ -9,7 +9,7 @@ module regfile(
 
     input wire we,
     input wire [4:0] waddr,
-    input wire [31:0] wdata
+    input wire [31:0] wdata,
 
     //ex_to_id
     input wire ex_id_wreg,
@@ -22,7 +22,7 @@ module regfile(
     
     input wire wb_id_wreg,
     input wire [4:0] wb_id_waddr,
-    input wire [31:0] wb_id_wdata,
+    input wire [31:0] wb_id_wdata
     
 );
     reg [31:0] reg_array [31:0];//定义32位寄存器

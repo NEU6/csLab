@@ -95,19 +95,19 @@ module ID(
     assign {
         ex_id_wreg,
         ex_id_waddr,
-        ex_id_wdata,
+        ex_id_wdata
     }=ex_to_id_bus;
     
     assign {
         mem_id_wreg,
         mem_id_waddr,
-        mem_id_wdata,
+        mem_id_wdata
     }=mem_to_id_bus;
 
     assign {
         wb_id_wreg,
         wb_id_waddr,
-        wb_id_wdata,
+        wb_id_wdata
     }=wb_to_id_bus;
 
     wire [5:0] opcode;//指令码，
@@ -149,7 +149,7 @@ module ID(
 
         .we     (wb_rf_we     ),
         .waddr  (wb_rf_waddr  ),
-        .wdata  (wb_rf_wdata  )
+        .wdata  (wb_rf_wdata  ),
 
         .ex_id_wreg  (ex_id_wreg  ),
         .ex_id_waddr (ex_id_waddr ),
@@ -159,7 +159,7 @@ module ID(
         .mem_id_wdata(mem_id_wdata),
         .wb_id_wreg  (wb_id_wreg  ),
         .wb_id_waddr (wb_id_waddr ),
-        .wb_id_wdata (wb_id_wdata ),
+        .wb_id_wdata (wb_id_wdata )
         
     );
 
@@ -271,7 +271,7 @@ module ID(
                               inst_andi | inst_and | inst_slt | 
                               inst_sltu | inst_nor | inst_xor | inst_or|
                               inst_addu | inst_lw | inst_sw |inst_slti|
-                              inst_sltiu|inst_add|inst_addi|inst_sub；
+                              inst_sltiu|inst_add|inst_addi|inst_sub;
 
     // pc to reg1
     assign sel_alu_src1[1] = inst_jal;
@@ -283,12 +283,12 @@ module ID(
     // rt to reg2
     assign sel_alu_src2[0] = inst_srlv | inst_srav | inst_sllv | inst_subu | 
                               inst_and | inst_slt | inst_sltu | inst_nor | inst_xor | 
-                              inst_sll | inst_srl | inst_sra | inst_or | inst_addu|inst_add|inst_sub；
+                              inst_sll | inst_srl | inst_sra | inst_or | inst_addu|inst_add|inst_sub;
 
     
     // imm_sign_extend to reg2
     assign sel_alu_src2[1] = inst_lui | inst_addiu | inst_lw |inst_sw|inst_slti|
-                             inst_sltiu|inst_addi；
+                             inst_sltiu|inst_addi;
 
     // 32'b8 to reg2 进行扩展(无符号|有符号)
     assign sel_alu_src2[2] = inst_jal;
@@ -348,7 +348,7 @@ module ID(
                          | inst_lw  
                          | inst_slti | inst_sltiu;
     // store in [31]
-    assign sel_rf_dst[2] = inst_jal | inst_jalr | inst_bltzal | inst_bgezal;
+    assign sel_rf_dst[2] = inst_jal ;
 
     // sel for regfile address
     assign rf_waddr = {5{sel_rf_dst[0]}} & rd 
@@ -371,8 +371,8 @@ module ID(
         rf_we,          // 70
         rf_waddr,       // 69:65
         sel_rf_res,     // 64
-        data1,         // 63:32
-        data2          // 31:0
+        rdata1,         // 63:32
+        rdata2          // 31:0
     };
 
 
@@ -386,7 +386,7 @@ module ID(
     wire [31:0] pc_plus_4;
     assign pc_plus_4 = id_pc + 32'h4;
 
-    assign rs_eq_rt = (data1 == data2);
+    assign rs_eq_rt = (rdata1 == rdata2);
     assign rs_neq_rt = (rdata1 != rdata2);//和beq指令相反
 
 //指令判断
