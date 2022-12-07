@@ -1,14 +1,10 @@
 `define IF_TO_ID_WD 33
-`define ID_TO_EX_WD 231
-`define EX_TO_MEM_WD 146
-`define MEM_TO_WB_WD 136
+`define ID_TO_EX_WD 159
+`define EX_TO_MEM_WD 76
+`define MEM_TO_WB_WD 70
 `define BR_WD 33
 `define DATA_SRAM_WD 69
-`define WB_TO_RF_WD 104
-`define EX_TO_ID_WD 104
-`define MEM_TO_ID_WD 104
-`define WB_TO_ID_WD 104
-
+`define WB_TO_RF_WD 38
 
 `define StallBus 6
 `define NoStop 1'b0
@@ -26,3 +22,8 @@
 `define DivResultNotReady 1'b0
 `define DivStart 1'b1
 `define DivStop 1'b0
+
+//数据相关新线
+`define EX_TO_ID_WD 38
+`define MEM_TO_ID_WD 38
+`define WB_TO_ID_WD 38

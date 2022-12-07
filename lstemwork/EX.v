@@ -1,6 +1,4 @@
 `include "lib/defines.vh"
-//对于需要访存的指令加入访存请求
-//LW、SW指令所用的RAM访问地址也是在本段上实现。控制信号有ALU，结果值存入EX/MEM流水线寄存器
 module EX(
     input wire clk,
     input wire rst,
@@ -8,19 +6,16 @@ module EX(
     input wire [`StallBus-1:0] stall,
 
     input wire [`ID_TO_EX_WD-1:0] id_to_ex_bus,
-    
+
     output wire [`EX_TO_MEM_WD-1:0] ex_to_mem_bus,
-    
+
     output wire data_sram_en,
     output wire [3:0] data_sram_wen,
     output wire [31:0] data_sram_addr,
     output wire [31:0] data_sram_wdata,
 
-    output wire [`EX_TO_ID_WD-1:0] ex_to_id_bus,//ex到ID段，数据相关
-
-    output wire isLS,
-    output wire stallreq_from_ex,
-    output wire div_ready_to_id
+    //数据相关新线
+    output wire [`EX_TO_ID_WD-1:0] ex_to_id_bus
 );
 
     reg [`ID_TO_EX_WD-1:0] id_to_ex_bus_r;
@@ -46,19 +41,17 @@ module EX(
     wire [3:0] sel_alu_src2;
     wire data_ram_en;
     wire [3:0] data_ram_wen;
-    wire [3:0] data_ram_readen;
     wire rf_we;
     wire [4:0] rf_waddr;
     wire sel_rf_res;
     wire [31:0] rf_rdata1, rf_rdata2;
     reg is_in_delayslot;
-    
 
+    //打开
     assign {
-        data_ram_readen,  
         ex_pc,          // 148:117
         inst,           // 116:85
-        alu_op,         // 84:83   
+        alu_op,         // 84:83
         sel_alu_src1,   // 82:80
         sel_alu_src2,   // 79:76
         data_ram_en,    // 75
@@ -78,15 +71,13 @@ module EX(
     wire [31:0] alu_src1, alu_src2;
     wire [31:0] alu_result, ex_result;
 
-
     assign alu_src1 = sel_alu_src1[1] ? ex_pc :
                       sel_alu_src1[2] ? sa_zero_extend : rf_rdata1;
 
     assign alu_src2 = sel_alu_src2[1] ? imm_sign_extend :
                       sel_alu_src2[2] ? 32'd8 :
                       sel_alu_src2[3] ? imm_zero_extend : rf_rdata2;
-
-    //传到alu进行操作 alu.v
+    
     alu u_alu(
     	.alu_control (alu_op ),
         .alu_src1    (alu_src1    ),
@@ -94,18 +85,34 @@ module EX(
         .alu_result  (alu_result  )
     );
 
+    //结果
     assign ex_result = alu_result;
+    assign data_sram_en = data_ram_en;
+    //写使能信号
+    assign data_sram_wen = data_ram_wen;
+    //内存的地址
+    assign data_sram_addr = ex_result; 
+    //写数据
+    assign data_sram_wdata = rf_rdata2;
 
-    assign isLS=(inst[31:26]==6'b10_0011)?1'b1:1'b0;  
+    // EX to MEM
+    assign ex_to_mem_bus = {
+        ex_pc,          // 75:44
+        data_ram_en,    // 43
+        data_ram_wen,   // 42:39
+        sel_rf_res,     // 38
+        rf_we,          // 37
+        rf_waddr,       // 36:32
+        ex_result       // 31:0
+    };
 
-
-
-
-    //数据相关，传到临时寄存器的三个变量，
+    //数据相关新线
+    assign ex_to_id_bus={
+        rf_we,          // 37
+        rf_waddr,       // 36:32
+        ex_result       // 31:0
+    };
     
-
-
-
     // MUL part
     wire [63:0] mul_result;
     wire mul_signed; // 有符号乘法标记
@@ -122,11 +129,9 @@ module EX(
     // DIV part
     wire [63:0] div_result;
     wire inst_div, inst_divu;
-    assign inst_div    = inst[31:26]==6'b00_0000&inst[15:6]==10'b00000_00000&inst[5:0]==6'b01_1010;
-    assign inst_divu   = inst[31:26]==6'b00_0000&inst[15:6]==10'b00000_00000&inst[5:0]==6'b01_1011;
     wire div_ready_i;
-
-    assign stallreq_from_ex = (if_div) & div_ready_i==1'b0;;
+    reg stallreq_for_div;
+    assign stallreq_for_ex = stallreq_for_div;
 
     reg [31:0] div_opdata1_o;
     reg [31:0] div_opdata2_o;
@@ -213,23 +218,6 @@ module EX(
     end
 
     // mul_result 和 div_result 可以直接使用
-
-     assign ex_to_mem_bus = {
-        data_ram_readen,         
-        ex_pc,          // 75:44
-        data_ram_en,    // 43
-        data_ram_wen,   // 42:39
-        sel_rf_res,     // 38
-        rf_we,          // 37
-        rf_waddr,       // 36:32
-        ex_result       // 31:0
-    };   
-
-    assign ex_to_id_bus={
-        rf_we,
-        rf_waddr,
-        ex_result
-    };
     
-
+    
 endmodule
