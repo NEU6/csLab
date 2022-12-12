@@ -87,7 +87,7 @@ module ID(
     wire [19:0] code;
     wire [4:0] base;
     wire [15:0] offset;
-    wire [2:0] sel;
+    wire [2:0] sel;//选择信号
 
     wire [63:0] op_d, func_d;
     wire [31:0] rs_d, rt_d, rd_d, sa_d;
@@ -164,26 +164,54 @@ module ID(
 
     
     assign inst_ori     = op_d[6'b00_1101];
+    assign inst_or      = op_d[6'b00_0000] & func_d[6'b10_0101];
     assign inst_lui     = op_d[6'b00_1111];
     assign inst_addiu   = op_d[6'b00_1001];
     assign inst_beq     = op_d[6'b00_0100];
     assign inst_subu    = op_d[6'b00_0000] & func_d[6'b10_0011];
-    assign inst_jr      = op_d[6'b00_0000] & func_d[6'b00_1000];
     assign inst_jal     = op_d[6'b00_0011];
+    assign inst_jr      = op_d[6'b00_0000] & func_d[6'b00_1000];
     assign inst_addu    = op_d[6'b00_0000] & func_d[6'b10_0001];
     assign inst_bne     = op_d[6'b00_0101];
     assign inst_sll     = op_d[6'b00_0000] & func_d[6'b00_0000];
-    assign inst_or      = op_d[6'b00_0000] & func_d[6'b10_0101];
-    assign inst_xor     = op_d[6'b00_0000] & func_d[6'b10_0110];
     assign inst_lw      = op_d[6'b10_0011];
     assign inst_sw      = op_d[6'b10_1011];
+    assign inst_srl     = op_d[6'b00_0000] & func_d[6'b00_0010];
+
+    assign inst_xor     = op_d[6'b00_0000] & func_d[6'b10_0110];
+    assign inst_sltu    = op_d[6'b00_0000] & func_d[6'b10_1011];
+    assign inst_slt     = op_d[6'b00_0000] & func_d[6'b10_1010];
+    assign inst_slti    = op_d[6'b00_1010];
+    assign inst_sltiu   = op_d[6'b00_1011];
+    assign inst_sllv    = op_d[6'b00_0000] & func_d[6'b00_0100];
+
+    assign inst_j       = op_d[6'b00_0010];
     assign inst_add     = op_d[6'b00_0000] & func_d[6'b10_0000];
     assign inst_addi    = op_d[6'b00_1000];
     assign inst_sub     = op_d[6'b00_0000] & func_d[6'b10_0010];
-    assign inst_slt     = op_d[6'b00_0000] & func_d[6'b10_1010];
-    assign inst_slti    = op_d[6'b00_1010];
-    assign inst_sltu    = op_d[6'b00_0000] & func_d[6'b10_1011];
-    assign inst_sltiu   = op_d[6'b00_1011];
+    assign inst_and     = op_d[6'b00_0000] & func_d[6'b10_0100];
+    assign inst_andi    = op_d[6'b00_1100];
+    assign inst_nor     = op_d[6'b00_0000] & func_d[6'b10_0111];
+    assign inst_xori    = op_d[6'b00_1110];
+    assign inst_sra     = op_d[6'b00_0000] & func_d[6'b00_0011];
+    assign inst_srav    = op_d[6'b00_0000] & func_d[6'b00_0111];
+    assign inst_srlv    = op_d[6'b00_0000] & func_d[6'b00_0110];
+    assign inst_bgez    = op_d[6'b00_0001] & rt_d[5'b0_0001];
+    assign inst_bgtz    = op_d[6'b00_0111];
+    assign inst_blez    = op_d[6'b00_0110];
+    assign inst_bltz    = op_d[6'b00_0001] & rt_d[5'b0_0000];
+    assign inst_bltzal  = op_d[6'b00_0001] & rt_d[5'b1_0000];
+    assign inst_bgezal  = op_d[6'b00_0001] & rt_d[5'b1_0001];
+    assign inst_jalr    = op_d[6'b00_0000] & func_d[6'b00_1001];
+
+
+
+
+
+
+
+
+
     assign inst_lb      = 1'b0;
     assign inst_lbu     = 1'b0;
     assign inst_lh      = 1'b0;
@@ -258,13 +286,18 @@ module ID(
 
 
     // store in [rd]
-    assign sel_rf_dst[0] = inst_subu | inst_addu | inst_sll | inst_or | inst_xor |
-                           inst_add | inst_sub | inst_slt | inst_sltu;
+    assign sel_rf_dst[0] = inst_addu | inst_add   | inst_sub
+                         | inst_sll  | inst_sllv  | inst_srl
+                         | inst_or   | inst_and   | inst_nor
+                         | inst_subu
+                         | inst_xor  | inst_sltu  | inst_slt
+                         | inst_sra  | inst_srav  | inst_srlv;
     // store in [rt] 
-    assign sel_rf_dst[1] = inst_ori | inst_lui | inst_addiu | inst_lw | inst_addi |
-                           inst_slti | inst_sltiu;
+    assign sel_rf_dst[1] = inst_ori | inst_lui | inst_addiu | inst_addi | inst_andi | inst_xori
+                         | inst_lw  
+                         | inst_slti | inst_sltiu;
     // store in [31]
-    assign sel_rf_dst[2] = inst_jal;
+    assign sel_rf_dst[2] = inst_jal | inst_jalr | inst_bltzal | inst_bgezal;
 
     // sel for regfile address
     assign rf_waddr = {5{sel_rf_dst[0]}} & rd 
@@ -275,6 +308,7 @@ module ID(
     assign sel_rf_res = inst_lw;
     
     
+    //  数据相关   RAW
     assign data1 = ((ex_rf_we && rs == ex_rf_waddr) ? ex_rf_wdata : 32'b0) | 
                    ((mem_rf_we && rs == mem_rf_waddr) ? mem_rf_wdata : 32'b0) |
                    ((wb_rf_we && rs == wb_rf_waddr) ? wb_rf_wdata : 32'b0) |
@@ -286,6 +320,7 @@ module ID(
                    (((ex_rf_we && rt == ex_rf_waddr) || (mem_rf_we && rt == mem_rf_waddr) || (wb_rf_we && rt == wb_rf_waddr)) ? 32'b0 : rdata2);
     
     assign id_to_ex_bus = {
+        mem_op,         //163:159
         id_pc,          // 158:127
         inst,           // 126:95
         alu_op,         // 94:83
@@ -313,12 +348,35 @@ module ID(
 
     assign rs_eq_rt = (data1 == data2);
 
-    assign br_e = inst_beq & rs_eq_rt | 
-                  inst_jr | inst_jal | inst_bne & ~rs_eq_rt;
-    assign br_addr = (inst_beq ? (pc_plus_4 + {{14{inst[15]}},inst[15:0],2'b0}) : 32'b0) |
-                     (inst_jr ? data1 : 32'b0) |
-                     (inst_jal ? {pc_plus_4[31:28],instr_index,2'b0} : 32'b0) |
-                     (inst_bne ? (pc_plus_4 + {{14{inst[15]}},inst[15:0],2'b0}) : 32'b0);
+
+    assign br_e = inst_beq  & rs_eq_rt
+                | inst_bne  & ~rs_eq_rt
+                | inst_jal
+                | inst_jr
+                | inst_j
+                | inst_jalr
+                | inst_bgez & rs_ge_z   // rs >= 0
+                | inst_bgezal & rs_ge_z //rs >= 0
+                | inst_bgtz & rs_gt_z   // rs > 0
+                | inst_blez & ~rs_gt_z  // rs <= 0
+                | inst_bltz & ~rs_ge_z  // rs < 0
+                | inst_bltzal & ~rs_ge_z// rs < 0
+                ;
+
+    assign br_addr = inst_beq    ? (pc_plus_4 + {{14{inst[15]}},inst[15:0],2'b0}) : 
+                     inst_bne    ? (pc_plus_4 + {{14{inst[15]}},inst[15:0],2'b0}) : 
+                     inst_jal    ? {pc_plus_4[31:28],inst[25:0],2'b0}:
+                     inst_jr     ? rdata1:
+                     inst_j      ? {pc_plus_4[31:28],inst[25:0],2'b0}:
+                     inst_bgez   ? (pc_plus_4 + {{14{inst[15]}},inst[15:0],2'b0}):
+                     inst_bgtz   ? (pc_plus_4 + {{14{inst[15]}},inst[15:0],2'b0}):
+                     inst_blez   ? (pc_plus_4 + {{14{inst[15]}},inst[15:0],2'b0}):
+                     inst_bltz   ? (pc_plus_4 + {{14{inst[15]}},inst[15:0],2'b0}):
+                     inst_bltzal ? (pc_plus_4 + {{14{inst[15]}},inst[15:0],2'b0}):
+                     inst_bgezal ? (pc_plus_4 + {{14{inst[15]}},inst[15:0],2'b0}):
+                     inst_jalr   ? (rdata1):
+                     32'b0;
+
 
     assign br_bus = {
         br_e,

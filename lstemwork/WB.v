@@ -37,6 +37,14 @@ module WB(
     wire [4:0] rf_waddr;
     wire [31:0] rf_wdata;
 
+
+//----------------
+    wire hi_we;         
+    wire lo_we;         
+    wire [31:0] hi_ex; 
+    wire [31:0] lo_ex; 
+//--------------------
+
     assign {
         wb_pc,
         rf_we,
@@ -44,7 +52,13 @@ module WB(
         rf_wdata
     } = mem_to_wb_bus_r;
 
-    assign wb_to_rf_bus = {
+    assign wb_to_rf_bus = {\
+    //----------------
+        hi_we,                  
+        lo_we,                  
+        hi_ex,                  
+        lo_ex, 
+    //--------------------  
         rf_we,
         rf_waddr,
         rf_wdata

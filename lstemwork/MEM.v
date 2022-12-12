@@ -4,7 +4,6 @@ module MEM(
     input wire rst,
     // input wire flush,
     input wire [`StallBus-1:0] stall,
-
     input wire [`EX_TO_MEM_WD-1:0] ex_to_mem_bus,
     input wire [3:0] data_ram_sel,
     input wire [31:0] data_sram_rdata,
@@ -55,6 +54,7 @@ module MEM(
     wire [7:0] b_data;
     wire [15:0] h_data;
     wire [31:0] w_data;
+    
     assign {
         inst_lb,
         inst_lbu,

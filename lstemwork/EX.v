@@ -1,5 +1,6 @@
-#需要加入方寸
 `include "lib/defines.vh"
+//对于需要访存的指令加入访存请求
+//LW、SW指令所用的RAM访问地址也是在本段上实现。控制信号有ALU，结果值存入EX/MEM流水线寄存器
 module EX(
     input wire clk,
     input wire rst,
@@ -15,6 +16,9 @@ module EX(
     
     output wire [`EX_TO_RF_WD-1:0] ex_to_rf_bus,
 
+    //-------
+    output wire stallreq_for_ex,
+    
     output wire [3:0] data_ram_sel,
     output wire data_sram_en,
     output wire [3:0] data_sram_wen,
@@ -65,9 +69,11 @@ module EX(
     wire inst_sb, inst_sh, inst_sw;
 
     assign {
+        //----------
+        mem_op,         // 163:159
         ex_pc,          // 148:117
         inst,           // 116:85
-        alu_op,         // 84:83
+        alu_op,         // 84:83   
         sel_alu_src1,   // 82:80
         sel_alu_src2,   // 79:76
         data_ram_en,    // 75
@@ -86,6 +92,7 @@ module EX(
 
     wire [31:0] alu_src1, alu_src2;
     wire [31:0] alu_result, ex_result;
+
 
     assign alu_src1 = sel_alu_src1[1] ? ex_pc :
                       sel_alu_src1[2] ? sa_zero_extend : rf_rdata1;
