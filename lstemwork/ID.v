@@ -9,6 +9,8 @@ module ID(
 
     input wire [`IF_TO_ID_WD-1:0] if_to_id_bus,
     input wire [`EX_TO_ID_WD-1:0] ex_to_id_bus,//与ex段output
+    input wire [`MEM_TO_ID_WD-1:0] mem_to_id_bus,
+    input wire [`WB_TO_ID_WD-1:0] wb_to_id_bus,
     input wire [31:0] inst_sram_rdata,
 
     input wire [`WB_TO_RF_WD-1:0] wb_to_rf_bus,
@@ -30,18 +32,18 @@ module ID(
     wire [31:0] id_pc;
     wire ce;
 
-//ex_to_id_bus
+//ex_to_id_bus 
     wire ex_rf_we;
     wire [4:0] ex_rf_waddr;
-    wire [31:0] ex_rf_wdata;
+    wire [31:0] ex_result;
     
     wire mem_rf_we;
     wire [4:0] mem_rf_waddr;
-    wire [31:0] mem_rf_wdata;
+    wire [31:0] mem_result;
     
     wire wb_rf_we;
     wire [4:0] wb_rf_waddr;
-    wire [31:0] wb_rf_wdata;
+    wire [31:0] wb_rf_result;
     
     reg is_stop;
     reg [31:0] buf_inst;
@@ -137,6 +139,9 @@ module ID(
         .waddr  (wb_rf_waddr  ),
         .wdata  (wb_rf_wdata  )
         .ex_to_id_bus (ex_to_id_bus)
+        .mem_to_id_bus (mem_to_id_bus)
+        .wb_to_id_bus (wb_to_id_bus)
+        
     );
 
     assign opcode = inst[31:26];

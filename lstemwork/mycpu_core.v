@@ -33,6 +33,8 @@ module mycpu_core(
     wire [`StallBus-1:0] stall;
 
     wire [`EX_TO_ID_WD-1:0] ex_to_id_bus;//ex_to_id
+    wire [`MEM_TO_ID_WD-1:0] mem_to_id_bus;
+    wire [`WB_TO_ID_WD-1:0] wb_to_id_bus;
     wire [`LoadBus-1:0] id_load_bus;
     wire [`LoadBus-1:0] ex_load_bus;
     wire [3:0] data_ram_sel;
@@ -63,6 +65,8 @@ module mycpu_core(
         .id_to_ex_bus    (id_to_ex_bus    ),
         .br_bus          (br_bus          ),
         .ex_to_id_bus    (ex_to_id_bus    ),//ex_to_id
+        .mem_to_id_bus   (mem_to_id_bus   ),
+        .wb_to_id_bus    (wb_to_id_bus    ),
         .id_load_bus     (id_load_bus     ),
         .id_save_bus     (id_save_bus     )
     );
@@ -75,13 +79,13 @@ module mycpu_core(
         .id_load_bus     (id_load_bus     ),
         .id_save_bus     (id_save_bus     ),
         .ex_to_mem_bus   (ex_to_mem_bus   ),
-        .ex_to_rf_bus    (ex_to_rf_bus    ),
         .data_ram_sel    (data_ram_sel    ),
         .data_sram_en    (data_sram_en    ),
         .data_sram_wen   (data_sram_wen   ),
         .data_sram_addr  (data_sram_addr  ),
         .data_sram_wdata (data_sram_wdata ),
-        .ex_load_bus     (ex_load_bus     )
+        .ex_load_bus     (ex_load_bus     ),
+        .ex_to_id_bus    (ex_to_id_bus    )
     );
 
     MEM u_MEM(
@@ -93,7 +97,7 @@ module mycpu_core(
         .data_sram_rdata (data_sram_rdata ),
         .ex_load_bus     (ex_load_bus     ),
         .mem_to_wb_bus   (mem_to_wb_bus   ),
-        .mem_to_rf_bus   (mem_to_rf_bus   )
+        .mem_to_id_bus   (mem_to_id_bus   )
     );
     
     WB u_WB(
@@ -105,7 +109,8 @@ module mycpu_core(
         .debug_wb_pc       (debug_wb_pc       ),
         .debug_wb_rf_wen   (debug_wb_rf_wen   ),
         .debug_wb_rf_wnum  (debug_wb_rf_wnum  ),
-        .debug_wb_rf_wdata (debug_wb_rf_wdata )
+        .debug_wb_rf_wdata (debug_wb_rf_wdata ),
+        .wb_to_id_bus    (wb_to_id_bus    ),
     );
 
     CTRL u_CTRL(
