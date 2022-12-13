@@ -16,8 +16,8 @@ module IF(
     output wire [31:0] inst_sram_addr,
     output wire [31:0] inst_sram_wdata
 );
-    reg [31:0] pc_reg;
-    reg ce_reg;
+    reg [31:0] pc_reg;//PC寄存器，指令执行位置
+    reg ce_reg; //使能信号，控制取不取指令
     wire [31:0] next_pc;
     wire br_e;
     wire [31:0] br_addr;

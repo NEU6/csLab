@@ -36,8 +36,8 @@ module mycpu_top(
         .data_sram_en      (data_sram_en      ),//数据
         .data_sram_wen     (data_sram_wen     ),
         .data_sram_addr    (data_sram_addr_v  ),
-        .data_sram_wdata   (data_sram_wdata   ),
-        .data_sram_rdata   (data_sram_rdata   ),
+        .data_sram_wdata   (data_sram_wdata   ),//写入内容
+        .data_sram_rdata   (data_sram_rdata   ),//读出内容
         .debug_wb_pc       (debug_wb_pc       ),
         .debug_wb_rf_wen   (debug_wb_rf_wen   ),
         .debug_wb_rf_wnum  (debug_wb_rf_wnum  ),

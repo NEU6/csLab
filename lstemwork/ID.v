@@ -2,7 +2,7 @@
 module ID(
     input wire clk,
     input wire rst,
-    // input wire flush,
+    input wire flush,
     input wire [`StallBus-1:0] stall,
     
     output wire stallreq,
@@ -42,32 +42,50 @@ module ID(
     wire [4:0] wb_rf_waddr;
     wire [31:0] wb_rf_wdata;
     
+    reg is_stop;
+    reg [31:0] buf_inst;
+
 
     always @ (posedge clk) begin
         if (rst) begin
-            if_to_id_bus_r <= `IF_TO_ID_WD'b0;        
+            if_to_id_bus_r <= `IF_TO_ID_WD'b0;
+            is_stop <= 0;
+            buf_inst <= 0;        
         end
         // else if (flush) begin
         //     ic_to_id_bus <= `IC_TO_ID_WD'b0;
         // end
         else if (stall[1]==`Stop && stall[2]==`NoStop) begin
             if_to_id_bus_r <= `IF_TO_ID_WD'b0;
+            is_stop <= 0;
         end
         else if (stall[1]==`NoStop) begin
             if_to_id_bus_r <= if_to_id_bus;
+            is_stop <= 0
+        end
+
+        else if (stall[1]==`Stop && stall[2]==`Stop && ~is_stop) begin
+            is_stop <= 1;
+            buf_inst <= inst_sram_rdata;
         end
     end
     
-    assign inst = inst_sram_rdata;
+    assign inst = ce ? (is_stop ? buf_inst : inst_sram_rdata) : 32'b0;
     assign {
         ce,
         id_pc
     } = if_to_id_bus_r;
+
+
+
     assign {
         wb_rf_we,
         wb_rf_waddr,
         wb_rf_wdata
     } = wb_to_rf_bus;
+
+
+    
     assign {
         ex_rf_we,
         ex_rf_waddr,
@@ -79,7 +97,7 @@ module ID(
         mem_rf_wdata
     } = mem_to_rf_bus;
 
-    wire [5:0] opcode;
+    wire [5:0] opcode;//指令码，
     wire [4:0] rs,rt,rd,sa;
     wire [5:0] func;
     wire [15:0] imm;
