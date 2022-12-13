@@ -1,4 +1,4 @@
-git reset --soft 7ad1e8b377e3facbe6430f3022424f600c0f8a42`include "lib/defines.vh"
+`include "lib/defines.vh"
 module ID(
     input wire clk,
     input wire rst,
@@ -8,7 +8,7 @@ module ID(
     output wire stallreq,
 
     input wire [`IF_TO_ID_WD-1:0] if_to_id_bus,
-
+    input wire [`EX_TO_ID_WD-1:0] ex_to_id_bus,//与ex段output
     input wire [31:0] inst_sram_rdata,
 
     input wire [`WB_TO_RF_WD-1:0] wb_to_rf_bus,
@@ -30,6 +30,7 @@ module ID(
     wire [31:0] id_pc;
     wire ce;
 
+//ex_to_id_bus
     wire ex_rf_we;
     wire [4:0] ex_rf_waddr;
     wire [31:0] ex_rf_wdata;
@@ -124,6 +125,8 @@ module ID(
 
     wire [31:0] rdata1, rdata2, data1, data2;
 
+
+//对寄存器的一些操作
     regfile u_regfile(
     	.clk    (clk    ),
         .raddr1 (rs ),
@@ -133,6 +136,7 @@ module ID(
         .we     (wb_rf_we     ),
         .waddr  (wb_rf_waddr  ),
         .wdata  (wb_rf_wdata  )
+        .ex_to_id_bus (ex_to_id_bus)
     );
 
     assign opcode = inst[31:26];
@@ -180,7 +184,7 @@ module ID(
         .out (rt_d )
     );
 
-    
+    //31:26,添加指令标识
     assign inst_ori     = op_d[6'b00_1101];
     assign inst_or      = op_d[6'b00_0000] & func_d[6'b10_0101];
     assign inst_lui     = op_d[6'b00_1111];
@@ -259,7 +263,7 @@ module ID(
     assign sel_alu_src2[1] = inst_lui | inst_addiu | inst_lw | inst_sw | inst_addi |
                              inst_slti | inst_sltiu;
 
-    // 32'b8 to reg2
+    // 32'b8 to reg2 进行扩展(无符号|有符号)
     assign sel_alu_src2[2] = inst_jal;
 
     // imm_zero_extend to reg2
@@ -295,7 +299,7 @@ module ID(
 
 
 
-    // regfile store enable
+    // regfile store enable,指令对rt操作
     assign rf_we = inst_ori | inst_lui | inst_addiu | inst_subu | inst_jal |
                    inst_addu | inst_sll | inst_or | inst_xor | inst_lw |
                    inst_add | inst_addi | inst_sub | inst_slt | inst_slti |
@@ -366,38 +370,22 @@ module ID(
 
     assign rs_eq_rt = (data1 == data2);
 
-
-    assign br_e = inst_beq  & rs_eq_rt
+//指令判断
+    assign br_e = inst_beq  & rs_eq_rt//必须这两个同时为1或者其他
                 | inst_bne  & ~rs_eq_rt
                 | inst_jal
                 | inst_jr
-                | inst_j
-                | inst_jalr
-                | inst_bgez & rs_ge_z   // rs >= 0
-                | inst_bgezal & rs_ge_z //rs >= 0
-                | inst_bgtz & rs_gt_z   // rs > 0
-                | inst_blez & ~rs_gt_z  // rs <= 0
-                | inst_bltz & ~rs_ge_z  // rs < 0
-                | inst_bltzal & ~rs_ge_z// rs < 0
                 ;
-
+//跳转地址值计算
     assign br_addr = inst_beq    ? (pc_plus_4 + {{14{inst[15]}},inst[15:0],2'b0}) : 
                      inst_bne    ? (pc_plus_4 + {{14{inst[15]}},inst[15:0],2'b0}) : 
                      inst_jal    ? {pc_plus_4[31:28],inst[25:0],2'b0}:
                      inst_jr     ? rdata1:
-                     inst_j      ? {pc_plus_4[31:28],inst[25:0],2'b0}:
-                     inst_bgez   ? (pc_plus_4 + {{14{inst[15]}},inst[15:0],2'b0}):
-                     inst_bgtz   ? (pc_plus_4 + {{14{inst[15]}},inst[15:0],2'b0}):
-                     inst_blez   ? (pc_plus_4 + {{14{inst[15]}},inst[15:0],2'b0}):
-                     inst_bltz   ? (pc_plus_4 + {{14{inst[15]}},inst[15:0],2'b0}):
-                     inst_bltzal ? (pc_plus_4 + {{14{inst[15]}},inst[15:0],2'b0}):
-                     inst_bgezal ? (pc_plus_4 + {{14{inst[15]}},inst[15:0],2'b0}):
-                     inst_jalr   ? (rdata1):
                      32'b0;
 
 
     assign br_bus = {
-        br_e,
+        br_e,//唯一跳转
         br_addr
     };
 

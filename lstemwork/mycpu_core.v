@@ -31,6 +31,8 @@ module mycpu_core(
     wire [`EX_TO_RF_WD-1:0] ex_to_rf_bus;
     wire [`MEM_TO_RF_WD-1:0] mem_to_rf_bus;
     wire [`StallBus-1:0] stall;
+
+    wire [`EX_TO_ID_WD-1:0] ex_to_id_bus;//ex_to_id
     wire [`LoadBus-1:0] id_load_bus;
     wire [`LoadBus-1:0] ex_load_bus;
     wire [3:0] data_ram_sel;
@@ -60,6 +62,7 @@ module mycpu_core(
         .mem_to_rf_bus   (mem_to_rf_bus   ),
         .id_to_ex_bus    (id_to_ex_bus    ),
         .br_bus          (br_bus          ),
+        .ex_to_id_bus    (ex_to_id_bus    ),//ex_to_id
         .id_load_bus     (id_load_bus     ),
         .id_save_bus     (id_save_bus     )
     );

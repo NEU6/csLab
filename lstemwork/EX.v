@@ -16,6 +16,7 @@ module EX(
     
     output wire [`EX_TO_RF_WD-1:0] ex_to_rf_bus,
 
+
     //-------
     output wire stallreq_for_ex,
     
@@ -24,7 +25,8 @@ module EX(
     output wire [3:0] data_sram_wen,
     output wire [31:0] data_sram_addr,
     output wire [31:0] data_sram_wdata,
-    
+
+    output wire [`EX_TO_ID_WD-1:0] ex_to_id_bus,//ex到ID段，数据相关
     output wire [`LoadBus-1:0] ex_load_bus
 );
 
@@ -100,7 +102,7 @@ module EX(
     assign alu_src2 = sel_alu_src2[1] ? imm_sign_extend :
                       sel_alu_src2[2] ? 32'd8 :
                       sel_alu_src2[3] ? imm_zero_extend : rf_rdata2;
-    
+    //传到alu进行操作 alu.v
     alu u_alu(
     	.alu_control (alu_op ),
         .alu_src1    (alu_src1    ),
@@ -135,14 +137,17 @@ module EX(
         sel_rf_res,     // 38
         rf_we,          // 37
         rf_waddr,       // 36:32
-        ex_result       // 31:0
+        ex_result       // 31:0，得到的结果
     };
-    assign ex_to_rf_bus = {
+
+    //数据相关，传到临时寄存器的三个变量，
+    
+    assign ex_to_id_bus={
         rf_we,
         rf_waddr,
-        ex_result
+        ex_result,
     };
-    
+
     assign ex_load_bus = {
         inst_lb,
         inst_lbu,
