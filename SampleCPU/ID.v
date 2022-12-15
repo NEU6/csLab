@@ -15,7 +15,12 @@ module ID(
 
     output wire [`ID_TO_EX_WD-1:0] id_to_ex_bus,
 
-    output wire [`BR_WD-1:0] br_bus 
+    output wire [`BR_WD-1:0] br_bus,
+
+    //数据相关新线
+    input wire [`EX_TO_ID_WD-1:0] ex_to_id_bus,
+    input wire [`MEM_TO_ID_WD-1:0] mem_to_id_bus,
+    input wire [`WB_TO_ID_WD-1:0] wb_to_id_bus,
 );
 
     reg [`IF_TO_ID_WD-1:0] if_to_id_bus_r;
@@ -88,16 +93,21 @@ module ID(
         .rdata2 (rdata2 ),
         .we     (wb_rf_we     ),
         .waddr  (wb_rf_waddr  ),
-        .wdata  (wb_rf_wdata  )
+        .wdata  (wb_rf_wdata  ),
+        //数据相关新线
+        .ex_to_id_bus (ex_to_id_bus),
+        .mem_to_id_bus (mem_to_id_bus),
+        .wb_to_id_bus (wb_to_id_bus)
     );
 
-    assign opcode = inst[31:26];
-    assign rs = inst[25:21];
-    assign rt = inst[20:16];
+    //译码
+    assign opcode = inst[31:26];//运算操作
+    assign rs = inst[25:21];//源寄存器
+    assign rt = inst[20:16];//目的寄存器
     assign rd = inst[15:11];
     assign sa = inst[10:6];
     assign func = inst[5:0];
-    assign imm = inst[15:0];
+    assign imm = inst[15:0];//立即数
     assign instr_index = inst[25:0];
     assign code = inst[25:6];
     assign base = inst[25:21];
@@ -137,7 +147,7 @@ module ID(
     assign inst_beq     = op_d[6'b00_0100];
 
 
-
+    //取操作数
     // rs to reg1
     assign sel_alu_src1[0] = inst_ori | inst_addiu;
 
@@ -237,7 +247,10 @@ module ID(
 
     assign rs_eq_rt = (rdata1 == rdata2);
 
+    //跳转信号
     assign br_e = inst_beq & rs_eq_rt;
+    
+    //跳转地址
     assign br_addr = inst_beq ? (pc_plus_4 + {{14{inst[15]}},inst[15:0],2'b0}) : 32'b0;
 
     assign br_bus = {

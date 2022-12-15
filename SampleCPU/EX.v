@@ -12,7 +12,10 @@ module EX(
     output wire data_sram_en,
     output wire [3:0] data_sram_wen,
     output wire [31:0] data_sram_addr,
-    output wire [31:0] data_sram_wdata
+    output wire [31:0] data_sram_wdata,
+
+    //数据相关新线
+    output wire [`EX_TO_ID_WD-1:0] ex_to_id_bus
 );
 
     reg [`ID_TO_EX_WD-1:0] id_to_ex_bus_r;
@@ -44,6 +47,7 @@ module EX(
     wire [31:0] rf_rdata1, rf_rdata2;
     reg is_in_delayslot;
 
+    //打开
     assign {
         ex_pc,          // 148:117
         inst,           // 116:85
@@ -81,8 +85,10 @@ module EX(
         .alu_result  (alu_result  )
     );
 
+    //结果
     assign ex_result = alu_result;
-
+    
+    // EX to MEM
     assign ex_to_mem_bus = {
         ex_pc,          // 75:44
         data_ram_en,    // 43
@@ -93,6 +99,13 @@ module EX(
         ex_result       // 31:0
     };
 
+    //数据相关新线
+    assign ex_to_id_bus={
+        rf_we,          // 37
+        rf_waddr,       // 36:32
+        ex_result       // 31:0
+    };
+    
     // MUL part
     wire [63:0] mul_result;
     wire mul_signed; // 有符号乘法标记
