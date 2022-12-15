@@ -1,16 +1,17 @@
-`include "defines.vh"
+`include "lib/defines.vh"
 module MEM(
     input wire clk,
     input wire rst,
     // input wire flush,
     input wire [`StallBus-1:0] stall,
-    input wire [`EX_TO_MEM_WD-1:0] ex_to_mem_bus,
 
+    input wire [`EX_TO_MEM_WD-1:0] ex_to_mem_bus,
     input wire [31:0] data_sram_rdata,
 
-
     output wire [`MEM_TO_WB_WD-1:0] mem_to_wb_bus,
-    output wire [`MEM_TO_ID_WD-1:0]  mem_to_id_bus
+
+    //数据相关新线
+    output wire [`MEM_TO_ID_WD-1:0] mem_to_id_bus
 );
 
     reg [`EX_TO_MEM_WD-1:0] ex_to_mem_bus_r;
@@ -33,7 +34,6 @@ module MEM(
     wire [31:0] mem_pc;
     wire data_ram_en;
     wire [3:0] data_ram_wen;
-    wire [3:0] data_ram_readen;
     wire sel_rf_res;
     wire rf_we;
     wire [4:0] rf_waddr;
@@ -41,12 +41,7 @@ module MEM(
     wire [31:0] ex_result;
     wire [31:0] mem_result;
 
-    assign mem_result=data_sram_rdata; 
-
-    
-
     assign {
-        data_ram_readen,
         mem_pc,         // 75:44
         data_ram_en,    // 43
         data_ram_wen,   // 42:39
@@ -56,7 +51,8 @@ module MEM(
         ex_result       // 31:0
     } =  ex_to_mem_bus_r;
 
-
+    //
+    assign mem_result=data_sram_rdata;
 
     assign rf_wdata = sel_rf_res ? mem_result : ex_result;
 
@@ -67,10 +63,11 @@ module MEM(
         rf_wdata    // 31:0
     };
 
-    assign mem_to_id_bus={
-        rf_we,  
-        rf_waddr,   
-        rf_wdata
+    //数据相关新线
+    assign mem_to_id_bus = {
+        rf_we,      // 37
+        rf_waddr,   // 36:32
+        rf_wdata    // 31:0
     };
 
 
