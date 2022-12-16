@@ -228,7 +228,7 @@ module EX(
     assign ex_to_id_bus={
         rf_we,
         rf_waddr,
-        ex_result,
+        ex_result
     };
     
 

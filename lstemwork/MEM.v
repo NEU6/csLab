@@ -10,7 +10,7 @@ module MEM(
 
 
     output wire [`MEM_TO_WB_WD-1:0] mem_to_wb_bus,
-    output wire [`MEM_TO_ID_WD-1:0]  mem_to_id_bus,
+    output wire [`MEM_TO_ID_WD-1:0]  mem_to_id_bus
 );
 
     reg [`EX_TO_MEM_WD-1:0] ex_to_mem_bus_r;
@@ -70,7 +70,7 @@ module MEM(
     assign mem_to_id_bus={
         rf_we,  
         rf_waddr,   
-        rf_wdata,,  
+        rf_wdata
     };
 
 
