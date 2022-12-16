@@ -8,10 +8,10 @@ module MEM(
     input wire [`EX_TO_MEM_WD-1:0] ex_to_mem_bus,
     input wire [31:0] data_sram_rdata,
 
-    output wire [`MEM_TO_WB_WD-1:0] mem_to_wb_bus
+    output wire [`MEM_TO_WB_WD-1:0] mem_to_wb_bus,
 
     //数据相关新线
-    output wire [`MEM_TO_ID_WD-1:0] mem_to_id_bus,
+    output wire [`MEM_TO_ID_WD-1:0] mem_to_id_bus
 );
 
     reg [`EX_TO_MEM_WD-1:0] ex_to_mem_bus_r;
