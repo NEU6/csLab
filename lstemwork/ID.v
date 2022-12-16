@@ -20,7 +20,12 @@ module ID(
     //数据相关新线
     input wire [`EX_TO_ID_WD-1:0] ex_to_id_bus,
     input wire [`MEM_TO_ID_WD-1:0] mem_to_id_bus,
-    input wire [`WB_TO_ID_WD-1:0] wb_to_id_bus
+    input wire [`WB_TO_ID_WD-1:0] wb_to_id_bus,
+
+    //气泡
+    input wire is_lw,
+    //暂停请求
+    output wire stallreq_from_id
 );
 
     reg [`IF_TO_ID_WD-1:0] if_to_id_bus_r;
@@ -31,6 +36,9 @@ module ID(
     wire wb_rf_we;
     wire [4:0] wb_rf_waddr;
     wire [31:0] wb_rf_wdata;
+
+
+
 
     always @ (posedge clk) begin
         if (rst) begin
@@ -46,8 +54,23 @@ module ID(
             if_to_id_bus_r <= if_to_id_bus;
         end
     end
-    
-    assign inst = inst_sram_rdata;
+
+    //stall相关
+    reg inst_stall_en;
+    reg[31:0] inst_stall;
+
+    //延迟槽
+    always @ (posedge clk) begin
+        inst_stall_en<=`NoStop;
+        inst_stall<=32'b0;
+        if(stall[1]==`Stop)begin
+            inst_stall_en<=`Stop;
+            inst_stall<=inst;
+        end
+    end
+
+    //判断当前指令
+    assign inst = inst_stall_en?inst_stall:inst_sram_rdata;
     assign {
         ce,
         id_pc
@@ -114,6 +137,9 @@ module ID(
     assign offset = inst[15:0];
     assign sel = inst[2:0];
 
+    //气泡请求
+    assign stallreq_from_id=(is_lw==1'b1&((rs==ex_to_id_bus[36:32])|(rt==ex_to_id_bus[36:32])));
+
     wire inst_ori, inst_lui, inst_addiu, inst_beq;
     //新增指令
     wire inst_subu;
@@ -125,6 +151,10 @@ module ID(
     wire inst_or;
     wire inst_lw;
     wire inst_sw;
+    wire inst_xor;
+    wire inst_sltu;
+    wire inst_slt;
+    wire inst_slti,inst_sltiu;
 
     wire op_add, op_sub, op_slt, op_sltu;
     wire op_and, op_nor, op_or, op_xor;
@@ -166,11 +196,18 @@ module ID(
     assign inst_or      = op_d[6'b00_0000]&(sa==5'b00000)&func_d[6'b10_0101];
     assign inst_lw      = op_d[6'b10_0011];
     assign inst_sw      = op_d[6'b10_1011];
+    assign inst_xor     = op_d[6'b00_0000]&(sa==5'b00000)&func_d[6'b10_0110];
+    assign inst_slt     = op_d[6'b00_0000]&sa==5'b00000&func_d[6'b10_1010];
+    assign inst_sltu    = op_d[6'b00_0000]&sa==5'b00000&func_d[6'b10_1011];
+    assign inst_slti    = op_d[6'b00_1010];
+    assign inst_sltiu   = op_d[6'b00_1011];
+
 
     //取操作数
     // rs to reg1
     assign sel_alu_src1[0] = inst_ori | inst_addiu | inst_subu|inst_addu |
-                            inst_or|inst_lw |inst_sw;
+                            inst_or|inst_lw |inst_sw|inst_xor|inst_slt|inst_slti|
+                            inst_sltiu|inst_sltu;
 
     // pc to reg1
     assign sel_alu_src1[1] = inst_jal;
@@ -180,10 +217,11 @@ module ID(
 
     
     // rt to reg2
-    assign sel_alu_src2[0] = inst_subu|inst_addu|inst_sll|inst_or|inst_lw ;
+    assign sel_alu_src2[0] = inst_subu|inst_addu|inst_sll|inst_or|inst_xor|
+                            inst_slt|inst_sltu;
     
     // imm_sign_extend to reg2
-    assign sel_alu_src2[1] = inst_lui | inst_addiu|inst_sw;
+    assign sel_alu_src2[1] = inst_lui | inst_addiu|inst_lw|inst_slti|inst_sltiu|inst_sw;
 
     // 32'b8 to reg2
     assign sel_alu_src2[2] = inst_jal;
@@ -195,12 +233,12 @@ module ID(
     //选操作逻辑
     assign op_add = inst_addiu|inst_jal|inst_addu|inst_lw |inst_sw;
     assign op_sub = inst_subu;
-    assign op_slt = 1'b0;
-    assign op_sltu = 1'b0;
+    assign op_slt = inst_slt|inst_slti;
+    assign op_sltu = inst_sltu|inst_sltiu;
     assign op_and = 1'b0;
     assign op_nor = 1'b0;
     assign op_or = inst_ori|inst_or;
-    assign op_xor = 1'b0;
+    assign op_xor = inst_xor;
     assign op_sll = inst_sll;
     assign op_srl = 1'b0;
     assign op_sra = 1'b0;
@@ -222,14 +260,14 @@ module ID(
     //写使能信号
     // regfile store enable
     assign rf_we = inst_ori | inst_lui | inst_addiu|inst_subu|inst_jal|inst_addu|inst_sll|inst_or|
-                    inst_lw;
+                    inst_lw | inst_xor |inst_slt |inst_slti|inst_sltiu|inst_sltu;
 
 
     //写入到rd
     // store in [rd]
-    assign sel_rf_dst[0] = inst_subu|inst_addu|inst_sll|inst_or;
+    assign sel_rf_dst[0] = inst_subu|inst_addu|inst_sll|inst_or|inst_xor|inst_slt |inst_sltu;
     // store in [rt] 
-    assign sel_rf_dst[1] = inst_ori | inst_lui | inst_addiu|inst_lw;
+    assign sel_rf_dst[1] = inst_ori | inst_lui | inst_addiu|inst_slti|inst_sltiu|inst_lw;
     // store in [31]
     assign sel_rf_dst[2] = inst_jal;
 
@@ -239,7 +277,7 @@ module ID(
                     | {5{sel_rf_dst[2]}} & 32'd31;
 
     // 0 from alu_res ; 1 from ld_res
-    assign sel_rf_res = 1'b0; 
+    assign sel_rf_res = inst_lw; 
 
     assign id_to_ex_bus = {
         id_pc,          // 158:127
