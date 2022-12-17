@@ -16,3 +16,5 @@
 12.11 添加sltiu通过点12 添加j指令通过点14 添加add通过点15
 
 12.13 添加addi、sub、and、andi、xori、nor、sllv、sra、srav、srl、srlv指令通过点36
+
+12.17 添加bgez,bgtz,blez,bltz,bltzal,bgezal,jalr指令通过点43
