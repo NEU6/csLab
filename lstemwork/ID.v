@@ -143,6 +143,7 @@ module ID(
     wire inst_ori, inst_lui, inst_addiu, inst_beq;
     //新增指令
     wire inst_subu;
+    wire inst_j;
     wire inst_jr;
     wire inst_jal;
     wire inst_addu;
@@ -188,6 +189,7 @@ module ID(
 
     //新增指令
     assign inst_subu    = op_d[6'b00_0000]&sa==5'b00000&func_d[6'b10_0011];
+    assign inst_j       = op_d[6'b00_0010];
     assign inst_jr      = op_d[6'b00_0000]&inst[20:11]==10'b00000_00000&sa==5'b00000&func_d[6'b00_1000];
     assign inst_jal     = op_d[6'b00_0011];
     assign inst_addu    = op_d[6'b00_0000]&sa==5'b00000&func_d[6'b10_0001];
@@ -224,7 +226,7 @@ module ID(
     assign sel_alu_src2[1] = inst_lui | inst_addiu|inst_lw|inst_slti|inst_sltiu|inst_sw;
 
     // 32'b8 to reg2
-    assign sel_alu_src2[2] = inst_jal;
+    assign sel_alu_src2[2] = inst_j|inst_jal;
 
     // imm_zero_extend to reg2
     assign sel_alu_src2[3] = inst_ori;
@@ -308,12 +310,13 @@ module ID(
     assign rs_eq_rt = (rdata1 == rdata2);
 
     //跳转信号
-    assign br_e = (inst_beq & rs_eq_rt) | inst_jr | inst_jal | (inst_bne&~rs_eq_rt) ;
+    assign br_e = (inst_beq & rs_eq_rt) | inst_jr |inst_j| inst_jal | (inst_bne&~rs_eq_rt) ;
     
     //跳转地址
     assign br_addr = inst_beq ? (pc_plus_4 + {{14{inst[15]}},inst[15:0],2'b0}) :
                     inst_jr?(rdata1):
                     inst_jal?({pc_plus_4[31:28],inst[25:0],2'b0}):
+                    inst_j?({pc_plus_4[31:28],inst[25:0],2'b0}):
                     inst_bne?(pc_plus_4 + {{14{inst[15]}},inst[15:0],2'b0}):
                     32'b0;
     assign br_bus = {
