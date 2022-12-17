@@ -237,7 +237,8 @@ module ID(
                             inst_sltiu|inst_sltu;
 
     // pc to reg1
-    assign sel_alu_src1[1] = inst_jal;
+    assign sel_alu_src1[1] = inst_jal|
+                             inst_bltzal | inst_bgezal;
 
     // sa_zero_extend to reg1
     assign sel_alu_src1[2] = inst_sll| inst_srl | inst_sra;
@@ -253,14 +254,15 @@ module ID(
     assign sel_alu_src2[1] = inst_lui | inst_addiu|inst_addi|inst_lw|inst_slti|inst_sltiu|inst_sw;
 
     // 32'b8 to reg2
-    assign sel_alu_src2[2] = inst_j|inst_jal;
+    assign sel_alu_src2[2] = inst_j|inst_jal|inst_bltzal|inst_bgezal;
 
     // imm_zero_extend to reg2
     assign sel_alu_src2[3] = inst_ori|inst_xori | inst_andi;
 
 
     //选操作逻辑
-    assign op_add = inst_addiu|inst_jal|inst_addu|inst_add|inst_addi|inst_lw |inst_sw;
+    assign op_add = inst_addiu|inst_jal|inst_addu|inst_add|inst_addi|
+                    inst_bltzal| inst_bgezal|inst_lw |inst_sw;
     assign op_sub = inst_sub|inst_subu;
     assign op_slt = inst_slt|inst_slti;
     assign op_sltu = inst_sltu|inst_sltiu;
@@ -290,7 +292,7 @@ module ID(
     // regfile store enable
     assign rf_we = inst_ori | inst_lui | inst_addiu|inst_addi|inst_subu|inst_sub|inst_jal|inst_addu|inst_add|inst_sll|
                    inst_or| inst_and |inst_andi | inst_xori |inst_nor | inst_sllv |inst_srlv | inst_srav |
-                   inst_srl | inst_sra |
+                   inst_srl | inst_sra |inst_bgezal | inst_bltzal |
                    inst_lw | inst_xor |inst_slt |inst_slti|inst_sltiu|inst_sltu;
 
 
@@ -303,7 +305,8 @@ module ID(
     assign sel_rf_dst[1] = inst_ori | inst_lui | inst_addiu|inst_addi|inst_andi |inst_xori | 
                            inst_slti|inst_sltiu|inst_lw;
     // store in [31]
-    assign sel_rf_dst[2] = inst_jal;
+    assign sel_rf_dst[2] = inst_jal|
+                           inst_bltzal | inst_bgezal;
 
     // sel for regfile address
     assign rf_waddr = {5{sel_rf_dst[0]}} & rd 
