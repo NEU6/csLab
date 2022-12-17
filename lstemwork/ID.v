@@ -161,6 +161,7 @@ module ID(
     wire inst_slt;
     wire inst_slti,inst_sltiu;
     wire inst_bgez,inst_bgtz, inst_blez ,inst_bltz ,inst_bltzal,inst_bgezal;
+    wire inst_jalr;
 
     wire op_add, op_sub, op_slt, op_sltu;
     wire op_and, op_nor, op_or, op_xor;
@@ -227,18 +228,19 @@ module ID(
     assign inst_bltz    = op_d[6'b00_0001]&rt_d[5'b00000];
     assign inst_bltzal  = op_d[6'b00_0001]&rt_d[5'b10000];
     assign inst_bgezal  = op_d[6'b00_0001]&rt_d[5'b10001];
+    assign inst_jalr    = op_d[6'b00_0000]&rt_d[5'b00000]&sa==5'b00000&func_d[6'b00_1001];
 
 
     //取操作数
     // rs to reg1
     assign sel_alu_src1[0] = inst_ori | inst_addiu | inst_subu|inst_sub|inst_addu |inst_add|inst_addi|
                             inst_or|inst_and |inst_andi |inst_xori |inst_nor |inst_srav |inst_srlv | 
-                            inst_lw |inst_sllv |inst_sw|inst_xor|inst_slt|inst_slti|
+                            inst_lw |inst_sllv |inst_sw|inst_xor|inst_slt|inst_slti|inst_jalr |
                             inst_sltiu|inst_sltu;
 
     // pc to reg1
     assign sel_alu_src1[1] = inst_jal|
-                             inst_bltzal | inst_bgezal;
+                             inst_bltzal | inst_bgezal| inst_jalr;
 
     // sa_zero_extend to reg1
     assign sel_alu_src1[2] = inst_sll| inst_srl | inst_sra;
@@ -254,7 +256,7 @@ module ID(
     assign sel_alu_src2[1] = inst_lui | inst_addiu|inst_addi|inst_lw|inst_slti|inst_sltiu|inst_sw;
 
     // 32'b8 to reg2
-    assign sel_alu_src2[2] = inst_j|inst_jal|inst_bltzal|inst_bgezal;
+    assign sel_alu_src2[2] = inst_j|inst_jal|inst_bltzal|inst_bgezal |inst_jalr ;
 
     // imm_zero_extend to reg2
     assign sel_alu_src2[3] = inst_ori|inst_xori | inst_andi;
@@ -262,7 +264,7 @@ module ID(
 
     //选操作逻辑
     assign op_add = inst_addiu|inst_jal|inst_addu|inst_add|inst_addi|
-                    inst_bltzal| inst_bgezal|inst_lw |inst_sw;
+                    inst_bltzal| inst_bgezal|inst_jalr|inst_lw |inst_sw;
     assign op_sub = inst_sub|inst_subu;
     assign op_slt = inst_slt|inst_slti;
     assign op_sltu = inst_sltu|inst_sltiu;
@@ -292,14 +294,14 @@ module ID(
     // regfile store enable
     assign rf_we = inst_ori | inst_lui | inst_addiu|inst_addi|inst_subu|inst_sub|inst_jal|inst_addu|inst_add|inst_sll|
                    inst_or| inst_and |inst_andi | inst_xori |inst_nor | inst_sllv |inst_srlv | inst_srav |
-                   inst_srl | inst_sra |inst_bgezal | inst_bltzal |
+                   inst_srl | inst_sra |inst_bgezal | inst_bltzal |inst_jalr |
                    inst_lw | inst_xor |inst_slt |inst_slti|inst_sltiu|inst_sltu;
 
 
     //写入到rd
     // store in [rd]
     assign sel_rf_dst[0] = inst_subu|inst_sub|inst_addu|inst_add|inst_sll|inst_sllv |
-                           inst_srlv | inst_srav |inst_srl | inst_sra|
+                           inst_srlv | inst_srav |inst_srl | inst_sra|inst_jalr|
                            inst_and |inst_or|inst_nor | inst_xor|inst_slt |inst_sltu;
     // store in [rt] 
     assign sel_rf_dst[1] = inst_ori | inst_lui | inst_addiu|inst_addi|inst_andi |inst_xori | 
@@ -349,7 +351,7 @@ module ID(
     assign rs_lt_z   = (rdata1[31] == 1'b1);
 
     //跳转信号
-    assign br_e = (inst_beq & rs_eq_rt) | inst_jr |inst_j| inst_jal | 
+    assign br_e = (inst_beq & rs_eq_rt) | inst_jr |inst_j| inst_jal | inst_jalr|
                   (inst_bgez && rs_ge_z)|(inst_bgtz &&  rs_gt_z)  | (inst_blez && rs_le_z)| 
                   (inst_bltz && rs_lt_z) | (inst_bltzal && rs_lt_z) | (inst_bgezal && rs_ge_z)|
                   (inst_bne&~rs_eq_rt) ;
@@ -365,6 +367,7 @@ module ID(
                     inst_bltz?(pc_plus_4+{{14{inst[15]}},inst[15:0],2'b0}):  
                     inst_bltzal?(pc_plus_4+{{14{inst[15]}},inst[15:0],2'b0}): 
                     inst_bgezal?(pc_plus_4+{{14{inst[15]}},inst[15:0],2'b0}):
+                    inst_jalr?(rdata1): 
                     inst_bne?(pc_plus_4 + {{14{inst[15]}},inst[15:0],2'b0}):
                     32'b0;
     assign br_bus = {
