@@ -38,7 +38,7 @@ module mycpu_core(
 
     //气泡
     wire is_lw;
-    //气泡请求
+    //id段气泡请求
     wire stallreq_from_id;
 
     IF u_IF(
