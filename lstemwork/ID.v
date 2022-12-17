@@ -160,6 +160,7 @@ module ID(
     wire inst_sltu;
     wire inst_slt;
     wire inst_slti,inst_sltiu;
+    wire inst_bgez;
 
     wire op_add, op_sub, op_slt, op_sltu;
     wire op_and, op_nor, op_or, op_xor;
@@ -219,6 +220,8 @@ module ID(
     assign inst_sltu    = op_d[6'b00_0000]&sa==5'b00000&func_d[6'b10_1011];
     assign inst_slti    = op_d[6'b00_1010];
     assign inst_sltiu   = op_d[6'b00_1011];
+
+    assign inst_bgez    = op_d[6'b00_0001]&rt_d[5'b00001];
 
 
     //取操作数
@@ -332,15 +335,18 @@ module ID(
     assign pc_plus_4 = id_pc + 32'h4;
 
     assign rs_eq_rt = (rdata1 == rdata2);
-
-    //跳转信号
-    assign br_e = (inst_beq & rs_eq_rt) | inst_jr |inst_j| inst_jal | (inst_bne&~rs_eq_rt) ;
+    assign rs_ge_z   = (rdata1[31] == 1'b0);
     
+    //跳转信号
+    assign br_e = (inst_beq & rs_eq_rt) | inst_jr |inst_j| inst_jal | 
+                  (inst_bgez && rs_ge_z)|(inst_bne&~rs_eq_rt) ;
+                
     //跳转地址
     assign br_addr = inst_beq ? (pc_plus_4 + {{14{inst[15]}},inst[15:0],2'b0}) :
                     inst_jr?(rdata1):
                     inst_jal?({pc_plus_4[31:28],inst[25:0],2'b0}):
                     inst_j?({pc_plus_4[31:28],inst[25:0],2'b0}):
+                    inst_bgez?(pc_plus_4+{{14{inst[15]}},inst[15:0],2'b0}):
                     inst_bne?(pc_plus_4 + {{14{inst[15]}},inst[15:0],2'b0}):
                     32'b0;
     assign br_bus = {
