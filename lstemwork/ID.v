@@ -160,7 +160,7 @@ module ID(
     wire inst_sltu;
     wire inst_slt;
     wire inst_slti,inst_sltiu;
-    wire inst_bgez;
+    wire inst_bgez,inst_bgtz, inst_blez ,inst_bltz ,inst_bltzal,inst_bgezal;
 
     wire op_add, op_sub, op_slt, op_sltu;
     wire op_and, op_nor, op_or, op_xor;
@@ -222,6 +222,11 @@ module ID(
     assign inst_sltiu   = op_d[6'b00_1011];
 
     assign inst_bgez    = op_d[6'b00_0001]&rt_d[5'b00001];
+    assign inst_bgtz    = op_d[6'b00_0111]&rt_d[5'b00000];
+    assign inst_blez    = op_d[6'b00_0110]&rt_d[5'b00000];
+    assign inst_bltz    = op_d[6'b00_0001]&rt_d[5'b00000];
+    assign inst_bltzal  = op_d[6'b00_0001]&rt_d[5'b10000];
+    assign inst_bgezal  = op_d[6'b00_0001]&rt_d[5'b10001];
 
 
     //取操作数
@@ -336,10 +341,15 @@ module ID(
 
     assign rs_eq_rt = (rdata1 == rdata2);
     assign rs_ge_z   = (rdata1[31] == 1'b0);
-    
+    assign rs_gt_z   = (rdata1[31] == 1'b0 && rdata1 != 32'b0);     
+    assign rs_le_z   = (rdata1[31] == 1'b1 || rdata1 == 32'b0);  
+    assign rs_lt_z   = (rdata1[31] == 1'b1);
+
     //跳转信号
     assign br_e = (inst_beq & rs_eq_rt) | inst_jr |inst_j| inst_jal | 
-                  (inst_bgez && rs_ge_z)|(inst_bne&~rs_eq_rt) ;
+                  (inst_bgez && rs_ge_z)|(inst_bgtz &&  rs_gt_z)  | (inst_blez && rs_le_z)| 
+                  (inst_bltz && rs_lt_z) | (inst_bltzal && rs_lt_z) | (inst_bgezal && rs_ge_z)|
+                  (inst_bne&~rs_eq_rt) ;
                 
     //跳转地址
     assign br_addr = inst_beq ? (pc_plus_4 + {{14{inst[15]}},inst[15:0],2'b0}) :
@@ -347,6 +357,11 @@ module ID(
                     inst_jal?({pc_plus_4[31:28],inst[25:0],2'b0}):
                     inst_j?({pc_plus_4[31:28],inst[25:0],2'b0}):
                     inst_bgez?(pc_plus_4+{{14{inst[15]}},inst[15:0],2'b0}):
+                    inst_bgtz?(pc_plus_4+{{14{inst[15]}},inst[15:0],2'b0}):   
+                    inst_blez?(pc_plus_4+{{14{inst[15]}},inst[15:0],2'b0}):   
+                    inst_bltz?(pc_plus_4+{{14{inst[15]}},inst[15:0],2'b0}):  
+                    inst_bltzal?(pc_plus_4+{{14{inst[15]}},inst[15:0],2'b0}): 
+                    inst_bgezal?(pc_plus_4+{{14{inst[15]}},inst[15:0],2'b0}):
                     inst_bne?(pc_plus_4 + {{14{inst[15]}},inst[15:0],2'b0}):
                     32'b0;
     assign br_bus = {
