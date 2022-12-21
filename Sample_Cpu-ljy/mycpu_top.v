@@ -25,25 +25,26 @@ module mycpu_top(
     wire [31:0] inst_sram_addr_v, data_sram_addr_v;
 
     mycpu_core u_mycpu_core(
-    	.clk               (clk               ),
-        .rst               (~resetn           ),
+    	.clk               (clk               ),//使能信号
+        .rst               (~resetn           ),//复位信号
         .int               (ext_int           ),
-        .inst_sram_en      (inst_sram_en      ),
+        .inst_sram_en      (inst_sram_en      ),//inst关于指令
         .inst_sram_wen     (inst_sram_wen     ),
         .inst_sram_addr    (inst_sram_addr_v  ),
         .inst_sram_wdata   (inst_sram_wdata   ),
         .inst_sram_rdata   (inst_sram_rdata   ),
-        .data_sram_en      (data_sram_en      ),
+        .data_sram_en      (data_sram_en      ),//数据
         .data_sram_wen     (data_sram_wen     ),
         .data_sram_addr    (data_sram_addr_v  ),
-        .data_sram_wdata   (data_sram_wdata   ),
-        .data_sram_rdata   (data_sram_rdata   ),
+        .data_sram_wdata   (data_sram_wdata   ),//写入内容
+        .data_sram_rdata   (data_sram_rdata   ),//读出内容
         .debug_wb_pc       (debug_wb_pc       ),
         .debug_wb_rf_wen   (debug_wb_rf_wen   ),
         .debug_wb_rf_wnum  (debug_wb_rf_wnum  ),
         .debug_wb_rf_wdata (debug_wb_rf_wdata )
     );
 
+//地址映射单元
     mmu u0_mmu(
     	.addr_i (inst_sram_addr_v ),
         .addr_o (inst_sram_addr   )

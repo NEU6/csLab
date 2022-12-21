@@ -12,7 +12,9 @@ module WB(
     output wire [31:0] debug_wb_pc,
     output wire [3:0] debug_wb_rf_wen,
     output wire [4:0] debug_wb_rf_wnum,
-    output wire [31:0] debug_wb_rf_wdata 
+    output wire [31:0] debug_wb_rf_wdata,
+    //数据相关新线
+    output wire [`WB_TO_ID_WD-1:0] wb_to_id_bus
 );
 
     reg [`MEM_TO_WB_WD-1:0] mem_to_wb_bus_r;
@@ -36,8 +38,16 @@ module WB(
     wire rf_we;
     wire [4:0] rf_waddr;
     wire [31:0] rf_wdata;
+    wire hi_we;         
+    wire lo_we;        
+    wire [31:0] hi_ex; 
+    wire [31:0] lo_ex; 
 
     assign {
+        hi_we,                    
+        lo_we,                    
+        hi_ex,                    
+        lo_ex,                    
         wb_pc,
         rf_we,
         rf_waddr,
@@ -45,9 +55,24 @@ module WB(
     } = mem_to_wb_bus_r;
 
     assign wb_to_rf_bus = {
+        hi_we,                   
+        lo_we,                
+        hi_ex,                    
+        lo_ex,                  
         rf_we,
         rf_waddr,
         rf_wdata
+    };
+
+    //数据相关新线
+    assign wb_to_id_bus = {
+        hi_we,                    
+        lo_we,                    
+        hi_ex,                    
+        lo_ex,                    
+        rf_we,      // 37
+        rf_waddr,   // 36:32
+        rf_wdata    // 31:0
     };
 
     assign debug_wb_pc = wb_pc;

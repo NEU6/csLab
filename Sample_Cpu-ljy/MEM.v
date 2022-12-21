@@ -1,4 +1,4 @@
-`include "defines.vh"
+`include "lib/defines.vh"
 module MEM(
     input wire clk,
     input wire rst,
@@ -6,64 +6,51 @@ module MEM(
     input wire [`StallBus-1:0] stall,
 
     input wire [`EX_TO_MEM_WD-1:0] ex_to_mem_bus,
-    input wire [3:0] data_ram_sel,
     input wire [31:0] data_sram_rdata,
-    
-    input wire [`LoadBus-1:0] ex_load_bus,
 
     output wire [`MEM_TO_WB_WD-1:0] mem_to_wb_bus,
-    output wire [`MEM_TO_RF_WD-1:0] mem_to_rf_bus
+
+    //数据相关新线
+    output wire [`MEM_TO_ID_WD-1:0] mem_to_id_bus
 );
 
     reg [`EX_TO_MEM_WD-1:0] ex_to_mem_bus_r;
-    reg [`LoadBus-1:0] ex_load_bus_r;
-    reg [3:0] data_ram_sel_r;
 
     always @ (posedge clk) begin
         if (rst) begin
             ex_to_mem_bus_r <= `EX_TO_MEM_WD'b0;
-            ex_load_bus_r <= `LoadBus'b0;
-            data_ram_sel_r <= 3'b0;
         end
         // else if (flush) begin
         //     ex_to_mem_bus_r <= `EX_TO_MEM_WD'b0;
         // end
         else if (stall[3]==`Stop && stall[4]==`NoStop) begin
             ex_to_mem_bus_r <= `EX_TO_MEM_WD'b0;
-            ex_load_bus_r <= `LoadBus'b0;
-            data_ram_sel_r <= 3'b0;
         end
         else if (stall[3]==`NoStop) begin
             ex_to_mem_bus_r <= ex_to_mem_bus;
-            ex_load_bus_r <= ex_load_bus;
-            data_ram_sel_r <= data_ram_sel;
         end
     end
 
     wire [31:0] mem_pc;
     wire data_ram_en;
     wire [3:0] data_ram_wen;
+    wire [3:0] data_ram_readen;
     wire sel_rf_res;
     wire rf_we;
     wire [4:0] rf_waddr;
     wire [31:0] rf_wdata;
     wire [31:0] ex_result;
     wire [31:0] mem_result;
-    
-    wire inst_lb, inst_lbu, inst_lh, inst_lhu, inst_lw;
-
-    wire [7:0] b_data;
-    wire [15:0] h_data;
-    wire [31:0] w_data;
+    wire hi_we;        
+    wire lo_we;         
+    wire [31:0] hi_ex; 
+    wire [31:0] lo_ex; 
     assign {
-        inst_lb,
-        inst_lbu,
-        inst_lh,
-        inst_lhu,
-        inst_lw
-    } = ex_load_bus_r;
-
-    assign {
+        data_ram_readen,         
+        hi_we,                   
+        lo_we,                  
+        hi_ex,                  
+        lo_ex,                  
         mem_pc,         // 75:44
         data_ram_en,    // 43
         data_ram_wen,   // 42:39
@@ -73,23 +60,45 @@ module MEM(
         ex_result       // 31:0
     } =  ex_to_mem_bus_r;
 
-    assign b_data = 8'b0;
-    assign h_data = 16'b0;
-    assign w_data = data_sram_rdata;
-    assign mem_result = inst_lw ? w_data : 32'b0;
+    //
+    assign mem_result=data_sram_rdata;
 
-    assign rf_wdata = sel_rf_res ? mem_result : ex_result;
+    //assign rf_wdata = sel_rf_res ? mem_result : ex_result;
+    assign rf_wdata =     (data_ram_readen==4'b1111 && data_ram_en==1'b1) ? data_sram_rdata 
+                        : (data_ram_readen==4'b0001 && data_ram_en==1'b1 && ex_result[1:0]==2'b00) ?({{24{data_sram_rdata[7]}},data_sram_rdata[7:0]})
+                        : (data_ram_readen==4'b0001 && data_ram_en==1'b1 && ex_result[1:0]==2'b01) ?({{24{data_sram_rdata[15]}},data_sram_rdata[15:8]})
+                        : (data_ram_readen==4'b0001 && data_ram_en==1'b1 && ex_result[1:0]==2'b10) ?({{24{data_sram_rdata[23]}},data_sram_rdata[23:16]})
+                        : (data_ram_readen==4'b0001 && data_ram_en==1'b1 && ex_result[1:0]==2'b11) ?({{24{data_sram_rdata[31]}},data_sram_rdata[31:24]})
+                        : (data_ram_readen==4'b0010 && data_ram_en==1'b1 && ex_result[1:0]==2'b00) ?({24'b0,data_sram_rdata[7:0]})
+                        : (data_ram_readen==4'b0010 && data_ram_en==1'b1 && ex_result[1:0]==2'b01) ?({24'b0,data_sram_rdata[15:8]})
+                        : (data_ram_readen==4'b0010 && data_ram_en==1'b1 && ex_result[1:0]==2'b10) ?({24'b0,data_sram_rdata[23:16]})
+                        : (data_ram_readen==4'b0010 && data_ram_en==1'b1 && ex_result[1:0]==2'b11) ?({24'b0,data_sram_rdata[31:24]})
+                        : (data_ram_readen==4'b0011 && data_ram_en==1'b1 && ex_result[1:0]==2'b00) ?({{16{data_sram_rdata[15]}},data_sram_rdata[15:0]})
+                        : (data_ram_readen==4'b0011 && data_ram_en==1'b1 && ex_result[1:0]==2'b10) ?({{16{data_sram_rdata[31]}},data_sram_rdata[31:16]})
+                        : (data_ram_readen==4'b0100 && data_ram_en==1'b1 && ex_result[1:0]==2'b00) ?({16'b0,data_sram_rdata[15:0]})
+                        : (data_ram_readen==4'b0100 && data_ram_en==1'b1 && ex_result[1:0]==2'b10) ?({16'b0,data_sram_rdata[31:16]})
+                        : ex_result;
 
     assign mem_to_wb_bus = {
+        hi_we,                    
+        lo_we,                    
+        hi_ex,                    
+        lo_ex,                    
         mem_pc,     // 69:38
         rf_we,      // 37
         rf_waddr,   // 36:32
         rf_wdata    // 31:0
     };
-    assign mem_to_rf_bus = {
-        rf_we,
-        rf_waddr,
-        rf_wdata
+
+    //数据相关新线
+    assign mem_to_id_bus = {
+        hi_we,                    
+        lo_we,                    
+        hi_ex,                    
+        lo_ex,                     
+        rf_we,      // 37
+        rf_waddr,   // 36:32
+        rf_wdata    // 31:0
     };
 
 

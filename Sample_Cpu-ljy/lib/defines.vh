@@ -6,12 +6,6 @@
 `define DATA_SRAM_WD 69
 `define WB_TO_RF_WD 38
 
-`define EX_TO_RF_WD 38
-`define MEM_TO_RF_WD 38
-
-`define LoadBus 5
-`define SaveBus 3
-
 `define StallBus 6
 `define NoStop 1'b0
 `define Stop 1'b1
@@ -28,3 +22,8 @@
 `define DivResultNotReady 1'b0
 `define DivStart 1'b1
 `define DivStop 1'b0
+
+//数据相关新线
+`define EX_TO_ID_WD 104
+`define MEM_TO_ID_WD 104
+`define WB_TO_ID_WD 104
