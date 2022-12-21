@@ -364,12 +364,12 @@ module ID(
     
     //mem read enable
     assign data_ram_readen =  inst_lw  ? 4'b1111 
-                             :inst_lb  ? 4'b0001 
-                             :inst_lbu ? 4'b0010
-                             :inst_lh  ? 4'b0011
-                             :inst_lhu ? 4'b0100
-                             :inst_sb  ? 4'b0101
-                             :inst_sh  ? 4'b0111
+                            //  :inst_lb  ? 4'b0001 
+                            //  :inst_lbu ? 4'b0010
+                            //  :inst_lh  ? 4'b0011
+                            //  :inst_lhu ? 4'b0100
+                            //  :inst_sb  ? 4'b0101
+                            //  :inst_sh  ? 4'b0111
                              :4'b0000;
 
     wire hi_write;//LL
