@@ -55,7 +55,18 @@ module EX(
     wire sel_rf_res;
     wire [31:0] rf_rdata1, rf_rdata2;
     reg is_in_delayslot;
-
+    wire hi_we;         
+    wire lo_we;         
+    wire [31:0] hi_ex; 
+    wire [31:0] lo_ex; 
+    wire if_mul;        
+    wire if_div;        
+    wire [31:0] hi_out_id;         
+    wire [31:0] lo_out_id;         
+    wire hi_read; 
+    wire lo_read; 
+    wire hi_write;
+    wire lo_write;
     //打开
     assign {
         data_ram_readen, 
