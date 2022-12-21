@@ -230,7 +230,7 @@ module EX(
                     end
                     else begin
                         div_opdata1_o = `ZeroWord;
-                        div_opdata2_stallreq_for_divo = `ZeroWord;
+                        div_opdata2_o = `ZeroWord;
                         div_start_o = `DivStop;
                         signed_div_o = 1'b0;
                         stallreq_for_div = `NoStop;
