@@ -174,11 +174,11 @@ module EX(
     assign inst_divu   = inst[31:26]==6'b00_0000&inst[15:6]==10'b00000_00000&inst[5:0]==6'b01_1011;
     wire div_ready_i;
     //ex段stall请求
-    reg stallreq_for_div;
-    assign stallreq_for_ex = stallreq_for_div;
+    //reg stallreq_for_div;
+    //assign stallreq_for_ex = stallreq_for_div;
 
     assign if_div=inst_div|inst_divu;   
-    //assign stallreq_for_ex = (if_div) & div_ready_i==1'b0;
+    assign stallreq_for_ex = (if_div) & div_ready_i==1'b0;
     assign div_ready_to_id = div_ready_i;
 
     reg [31:0] div_opdata1_o;
@@ -200,14 +200,14 @@ module EX(
 
     always @ (*) begin
         if (rst) begin
-            stallreq_for_div = `NoStop;
+            //stallreq_for_div = `NoStop;
             div_opdata1_o = `ZeroWord;
             div_opdata2_o = `ZeroWord;
             div_start_o = `DivStop;
             signed_div_o = 1'b0;
         end
         else begin
-            stallreq_for_div = `NoStop;
+            //stallreq_for_div = `NoStop;
             div_opdata1_o = `ZeroWord;
             div_opdata2_o = `ZeroWord;
             div_start_o = `DivStop;
@@ -219,21 +219,21 @@ module EX(
                         div_opdata2_o = rf_rdata2;
                         div_start_o = `DivStart;
                         signed_div_o = 1'b1;
-                        stallreq_for_div = `Stop;
+                        //stallreq_for_div = `Stop;
                     end
                     else if (div_ready_i == `DivResultReady) begin
                         div_opdata1_o = rf_rdata1;
                         div_opdata2_o = rf_rdata2;
                         div_start_o = `DivStop;
                         signed_div_o = 1'b1;
-                        stallreq_for_div = `NoStop;
+                        //stallreq_for_div = `NoStop;
                     end
                     else begin
                         div_opdata1_o = `ZeroWord;
                         div_opdata2_o = `ZeroWord;
                         div_start_o = `DivStop;
                         signed_div_o = 1'b0;
-                        stallreq_for_div = `NoStop;
+                        //stallreq_for_div = `NoStop;
                     end
                 end
                 2'b01:begin
@@ -242,21 +242,21 @@ module EX(
                         div_opdata2_o = rf_rdata2;
                         div_start_o = `DivStart;
                         signed_div_o = 1'b0;
-                        stallreq_for_div = `Stop;
+                        //stallreq_for_div = `Stop;
                     end
                     else if (div_ready_i == `DivResultReady) begin
                         div_opdata1_o = rf_rdata1;
                         div_opdata2_o = rf_rdata2;
                         div_start_o = `DivStop;
                         signed_div_o = 1'b0;
-                        stallreq_for_div = `NoStop;
+                        //stallreq_for_div = `NoStop;
                     end
                     else begin
                         div_opdata1_o = `ZeroWord;
                         div_opdata2_o = `ZeroWord;
                         div_start_o = `DivStop;
                         signed_div_o = 1'b0;
-                        stallreq_for_div = `NoStop;
+                        //stallreq_for_div = `NoStop;
                     end
                 end
                 default:begin
