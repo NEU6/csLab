@@ -219,12 +219,13 @@ module ID(
     wire inst_bgez,inst_bgtz, inst_blez ,inst_bltz ,inst_bltzal,inst_bgezal;
     wire inst_jalr;
 
-    //hl
+    //hilo
     wire inst_movn,inst_movz,inst_mfhi,inst_mflo,inst_mthi,inst_mtlo;   
 
     wire op_add, op_sub, op_slt, op_sltu;
     wire op_and, op_nor, op_or, op_xor;
     wire op_sll, op_srl, op_sra, op_lui;
+    wire inst_div, inst_divu, inst_mult, inst_multu;
 
     decoder_6_64 u0_decoder_6_64(
     	.in  (opcode  ),
@@ -302,14 +303,23 @@ module ID(
     assign inst_mfhi    = op_d[6'b00_0000]&inst[25:16]==10'b00000_00000&sa==5'b00000&func_d[6'b01_0000];
     assign inst_mflo    = op_d[6'b00_0000]&inst[25:16]==10'b00000_00000&sa==5'b00000&func_d[6'b01_0010];
     assign inst_mthi    = op_d[6'b00_0000]&inst[20:11]==10'b00000_00000&sa==5'b00000&func_d[6'b01_0001];
-    assign inst_mtlo    = op_d[6'b00_0000]&inst[20:11]==10'b00000_00000&sa==5'b00000&func_d[6'b01_0011];
-
+    assign inst_div     = op_d[6'b00_000?]&inst[15:6]==10'b00000_00000&func_d[6'b01_1010];
+    assign inst_divu    = op_d[6'b00_0000]&inst[15:6]==10'b00000_00000&func_d[6'b01_1011];
+    assign inst_mult    = op_d[6'b00_0000]&inst[15:6]==10'b00000_00000&func_d[6'b01_1000];
+    assign inst_multu   = op_d[6'b00_0000]&inst[15:6]==10'b00000_00000&func_d[6'b01_1001];    assign inst_mtlo    = op_d[6'b00_0000]&inst[20:11]==10'b00000_00000&sa==5'b00000&func_d[6'b01_0011];
+    //访存指令
+    assign inst_lb      = op_d[6'b10_0000];
+    assign inst_lbu     = op_d[6'b10_0100];
+    assign inst_lh      = op_d[6'b10_0001];
+    assign inst_lhu     = op_d[6'b10_0101];
+    assign inst_sb      = op_d[6'b10_1000];
+    assign inst_sh      = op_d[6'b10_1001];
     //取操作数
     // rs to reg1
     assign sel_alu_src1[0] = inst_ori | inst_addiu | inst_subu|inst_sub|inst_addu |inst_add|inst_addi|
                             inst_or|inst_and |inst_andi |inst_xori |inst_nor |inst_srav |inst_srlv | 
                             inst_lw |inst_sllv |inst_sw|inst_xor|inst_slt|inst_slti|inst_jalr |
-                            inst_sltiu|inst_sltu;
+                            inst_sltiu|inst_sltu| inst_div  | inst_divu | inst_mult | inst_multu;
 
     // pc to reg1
     assign sel_alu_src1[1] = inst_jal|
@@ -323,7 +333,7 @@ module ID(
     assign sel_alu_src2[0] = inst_subu|inst_addu|inst_add|inst_sll|inst_sllv |
                              inst_srlv | inst_srav |inst_sra | inst_srl |
                              inst_and |inst_or|inst_nor |inst_xor|inst_sub|
-                            inst_slt|inst_sltu;
+                            inst_slt|inst_sltu|inst_div  | inst_divu | inst_mult | inst_multu;
     
     // imm_sign_extend to reg2
     assign sel_alu_src2[1] = inst_lui | inst_addiu|inst_addi|inst_lw|inst_slti|inst_sltiu|inst_sw;
