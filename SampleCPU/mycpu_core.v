@@ -39,7 +39,7 @@ module mycpu_core(
     //气泡
     wire is_lw;
     //id段气泡请求
-    wire stallreq_from_id;
+    wire stallreq_for_id;
 
     IF u_IF(
     	.clk             (clk             ),
@@ -58,7 +58,7 @@ module mycpu_core(
     	.clk             (clk             ),
         .rst             (rst             ),
         .stall           (stall           ),
-        .stallreq        (stallreq        ),
+        //.stallreq        (stallreq        ),
         .if_to_id_bus    (if_to_id_bus    ),
         .inst_sram_rdata (inst_sram_rdata ),
         .wb_to_rf_bus    (wb_to_rf_bus    ),
@@ -71,7 +71,7 @@ module mycpu_core(
         //气泡
         .is_lw (is_lw),
         //气泡请求
-        .stallreq_from_id (stallreq_from_id)
+        .stallreq_for_id (stallreq_for_id)
     );
 
     EX u_EX(
@@ -117,7 +117,7 @@ module mycpu_core(
 
     CTRL u_CTRL(
         //气泡请求
-        .stallreq_from_id  (stallreq_from_id),
+        .stallreq_for_id  (stallreq_for_id),
     	.rst   (rst   ),
         .stall (stall )
     );

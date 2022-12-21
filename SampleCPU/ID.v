@@ -5,7 +5,7 @@ module ID(
     // input wire flush,
     input wire [`StallBus-1:0] stall,
     
-    output wire stallreq,
+    //output wire stallreq,
 
     input wire [`IF_TO_ID_WD-1:0] if_to_id_bus,
 
@@ -25,7 +25,9 @@ module ID(
     //气泡
     input wire is_lw,
     //暂停请求
-    output wire stallreq_from_id
+    output wire stallreq_for_id,
+    //除法
+    input wire div_ready_to_id
 );
 
     reg [`IF_TO_ID_WD-1:0] if_to_id_bus_r;
@@ -36,7 +38,40 @@ module ID(
     wire wb_rf_we;
     wire [4:0] wb_rf_waddr;
     wire [31:0] wb_rf_wdata;
+    //hilo
+    wire hi_read; 
+    wire lo_read; 
+    wire ex_id_wreg;
+    wire [4:0] ex_id_waddr;
+    wire [31:0] ex_id_wdata;
+    wire ex_id_hi_we;          
+    wire ex_id_lo_we;          
+    wire [31:0] ex_id_hi;      
+    wire [31:0] ex_id_lo;      
 
+    wire ex_rf_hi_we;          
+    wire ex_rf_lo_we;          
+    wire [31:0] ex_rf_hi;       
+    wire [31:0] ex_rf_lo;       
+      
+    wire mem_id_wreg;
+    wire [4:0] mem_id_waddr;
+    wire [31:0] mem_id_wdata;
+    wire mem_id_hi_we;          
+    wire mem_id_lo_we;         
+    wire [31:0] mem_id_hi;     
+    wire [31:0] mem_id_lo;     
+    
+    wire wb_id_wreg;
+    wire [4:0] wb_id_waddr;
+    wire [31:0] wb_id_wdata;
+    wire wb_id_hi_we;          
+    wire wb_id_lo_we;          
+    wire [31:0] wb_id_hi;      
+    wire [31:0] wb_id_lo;      
+    wire [31:0] hi_out; 
+    wire [31:0] lo_out; 
+    
 
 
 
@@ -71,11 +106,17 @@ module ID(
 
     //判断当前指令
     assign inst = inst_stall_en?inst_stall:inst_sram_rdata;
+
     assign {
         ce,
         id_pc
     } = if_to_id_bus_r;
+
     assign {
+        ex_rf_hi_we,           
+        ex_rf_lo_we,            
+        ex_rf_hi,               
+        ex_rf_lo,   
         wb_rf_we,
         wb_rf_waddr,
         wb_rf_wdata
@@ -100,6 +141,7 @@ module ID(
 
     wire data_ram_en;
     wire [3:0] data_ram_wen;
+    wire [3:0] data_ram_readen;
     
     wire rf_we;
     wire [4:0] rf_waddr;
@@ -107,6 +149,16 @@ module ID(
     wire [2:0] sel_rf_dst;
 
     wire [31:0] rdata1, rdata2;
+
+    //hl_bus
+    assign hl_bus={
+        ex_rf_hi_we,
+        ex_rf_lo_we,
+        hi_read,
+        lo_read,
+        ex_rf_hi,
+        ex_rf_lo
+    }
 
     regfile u_regfile(
     	.clk    (clk    ),
@@ -121,6 +173,11 @@ module ID(
         .ex_to_id_bus (ex_to_id_bus),
         .mem_to_id_bus (mem_to_id_bus),
         .wb_to_id_bus (wb_to_id_bus)
+        //hlbus
+        .hl_bus (hl_bus)
+        .hi_out(hi_out),
+        .lo_out(lo_out),
+
     );
 
     //译码
@@ -138,7 +195,7 @@ module ID(
     assign sel = inst[2:0];
 
     //气泡请求
-    assign stallreq_from_id=(is_lw==1'b1&((rs==ex_to_id_bus[36:32])|(rt==ex_to_id_bus[36:32])));
+    assign stallreq_for_id=(is_lw==1'b1&((rs==ex_to_id_bus[36:32])|(rt==ex_to_id_bus[36:32])));
 
     wire inst_ori, inst_lui, inst_addiu, inst_beq;
     //新增指令
@@ -162,6 +219,9 @@ module ID(
     wire inst_slti,inst_sltiu;
     wire inst_bgez,inst_bgtz, inst_blez ,inst_bltz ,inst_bltzal,inst_bgezal;
     wire inst_jalr;
+
+    //hl
+    wire inst_movn,inst_movz,inst_mfhi,inst_mflo,inst_mthi,inst_mtlo;   
 
     wire op_add, op_sub, op_slt, op_sltu;
     wire op_and, op_nor, op_or, op_xor;
@@ -229,7 +289,21 @@ module ID(
     assign inst_bltzal  = op_d[6'b00_0001]&rt_d[5'b10000];
     assign inst_bgezal  = op_d[6'b00_0001]&rt_d[5'b10001];
     assign inst_jalr    = op_d[6'b00_0000]&rt_d[5'b00000]&sa==5'b00000&func_d[6'b00_1001];
-
+    assign inst_jal     = op_d[6'b00_0011];
+    assign inst_jr      = op_d[6'b00_0000]&inst[20:11]==10'b00000_00000&sa==5'b00000&func_d[6'b00_1000];
+    assign inst_bne     = op_d[6'b00_0101];
+    assign inst_j       = op_d[6'b00_0010];
+    
+    assign inst_addu    = op_d[6'b00_0000]&sa==5'b00000&func_d[6'b10_0001];
+    assign inst_lw      = op_d[6'b10_0011];
+    assign inst_sw      = op_d[6'b10_1011];
+    
+    assign inst_movn    = op_d[6'b00_0000]&sa==5'b00000&func_d[6'b00_1011];
+    assign inst_movz    = op_d[6'b00_0000]&sa==5'b00000&func_d[6'b00_1010];
+    assign inst_mfhi    = op_d[6'b00_0000]&inst[25:16]==10'b00000_00000&sa==5'b00000&func_d[6'b01_0000];
+    assign inst_mflo    = op_d[6'b00_0000]&inst[25:16]==10'b00000_00000&sa==5'b00000&func_d[6'b01_0010];
+    assign inst_mthi    = op_d[6'b00_0000]&inst[20:11]==10'b00000_00000&sa==5'b00000&func_d[6'b01_0001];
+    assign inst_mtlo    = op_d[6'b00_0000]&inst[20:11]==10'b00000_00000&sa==5'b00000&func_d[6'b01_0011];
 
     //取操作数
     // rs to reg1
@@ -288,7 +362,24 @@ module ID(
 
     // write enable
     assign data_ram_wen = inst_sw?4'b1111:4'b0000;
+    
+    //mem read enable
+    assign data_ram_readen =  inst_lw  ? 4'b1111 
+                             :inst_lb  ? 4'b0001 
+                             :inst_lbu ? 4'b0010
+                             :inst_lh  ? 4'b0011
+                             :inst_lhu ? 4'b0100
+                             :inst_sb  ? 4'b0101
+                             :inst_sh  ? 4'b0111
+                             :4'b0000;
 
+    wire hi_write;//LL
+    wire lo_write;//LL
+    
+    assign hi_read = inst_mfhi;                             
+    assign lo_read = inst_mflo;                             
+    assign hi_write = inst_mthi;                            
+    assign lo_write = inst_mtlo;       
 
     //写使能信号
     // regfile store enable
@@ -319,6 +410,13 @@ module ID(
     assign sel_rf_res = inst_lw; 
 
     assign id_to_ex_bus = {
+        data_ram_readen,
+        hi_write, 
+        lo_write,
+        hi_read,
+        lo_read,
+        hi_out_file, 
+        lo_out_file,
         id_pc,          // 158:127
         inst,           // 126:95
         alu_op,         // 94:83
@@ -343,7 +441,7 @@ module ID(
     wire rs_lt_z;
     wire [31:0] pc_plus_4;
     assign pc_plus_4 = id_pc + 32'h4;
-
+     
     assign rs_eq_rt = (rdata1 == rdata2);
     assign rs_ge_z   = (rdata1[31] == 1'b0);
     assign rs_gt_z   = (rdata1[31] == 1'b0 && rdata1 != 32'b0);     
