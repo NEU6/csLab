@@ -18,7 +18,7 @@ module EX(
     output wire [`EX_TO_ID_WD-1:0] ex_to_id_bus,
 
     //气泡
-    output wire is_lw
+    output wire is_lw,
     //ex段stall请求
     output wire stallreq_for_ex,
     //

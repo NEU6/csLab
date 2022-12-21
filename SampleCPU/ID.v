@@ -158,7 +158,7 @@ module ID(
         lo_read,
         ex_rf_hi,
         ex_rf_lo
-    }
+    };
 
     regfile u_regfile(
     	.clk    (clk    ),
@@ -172,12 +172,11 @@ module ID(
         //数据相关新线
         .ex_to_id_bus (ex_to_id_bus),
         .mem_to_id_bus (mem_to_id_bus),
-        .wb_to_id_bus (wb_to_id_bus)
+        .wb_to_id_bus (wb_to_id_bus),
         //hlbus
-        .hl_bus (hl_bus)
+        .hl_bus (hl_bus),
         .hi_out(hi_out),
-        .lo_out(lo_out),
-
+        .lo_out(lo_out)
     );
 
     //译码
@@ -415,8 +414,8 @@ module ID(
         lo_write,
         hi_read,
         lo_read,
-        hi_out_file, 
-        lo_out_file,
+        hi_out, 
+        lo_out,
         id_pc,          // 158:127
         inst,           // 126:95
         alu_op,         // 94:83

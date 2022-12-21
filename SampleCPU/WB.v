@@ -69,7 +69,7 @@ module WB(
         hi_we,                    
         lo_we,                    
         hi_ex,                    
-        lo_ex                    
+        lo_ex,                    
         rf_we,      // 37
         rf_waddr,   // 36:32
         rf_wdata    // 31:0
