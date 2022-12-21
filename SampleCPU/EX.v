@@ -296,13 +296,13 @@ module EX(
     
     //新增
     assign ex_to_id_bus={
-        rf_we,
-        rf_waddr,
-        ex_result,
         hi_we,                   
         lo_we,                   
         hi_ex,                    
-        lo_ex                     
+        lo_ex,
+        rf_we,
+        rf_waddr,
+        ex_result           
     };
     
     
