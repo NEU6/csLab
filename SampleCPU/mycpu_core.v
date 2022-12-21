@@ -40,6 +40,8 @@ module mycpu_core(
     wire is_lw;
     //id段气泡请求
     wire stallreq_for_id;
+    wire stallreq_for_ex;
+    wire div_ready_to_id;
 
     IF u_IF(
     	.clk             (clk             ),
@@ -71,7 +73,8 @@ module mycpu_core(
         //气泡
         .is_lw (is_lw),
         //气泡请求
-        .stallreq_for_id (stallreq_for_id)
+        .stallreq_for_id (stallreq_for_id),
+        .div_ready_to_id (div_ready_to_id)
     );
 
     EX u_EX(
@@ -87,7 +90,8 @@ module mycpu_core(
         //数据相关新线
         .ex_to_id_bus   (ex_to_id_bus    ),
         //气泡
-        .is_lw (is_lw)
+        .is_lw (is_lw),
+        .div_ready_to_id (div_ready_to_id)
     );
 
     MEM u_MEM(
