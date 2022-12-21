@@ -91,6 +91,7 @@ module mycpu_core(
         .ex_to_id_bus   (ex_to_id_bus    ),
         //气泡
         .is_lw (is_lw),
+        .stallreq_for_ex(stallreq_for_ex),
         .div_ready_to_id (div_ready_to_id)
     );
 
