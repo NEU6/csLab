@@ -122,7 +122,7 @@ module mycpu_core(
     CTRL u_CTRL(
         //气泡请求
         .stallreq_for_id  (stallreq_for_id),
-        .stallreq_from_ex  (stallreq_from_ex),
+        .stallreq_for_ex  (stallreq_for_ex),
     	.rst   (rst   ),
         .stall (stall )
     );
