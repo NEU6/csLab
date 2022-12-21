@@ -385,14 +385,14 @@ module ID(
     assign rf_we = inst_ori | inst_lui | inst_addiu|inst_addi|inst_subu|inst_sub|inst_jal|inst_addu|inst_add|inst_sll|
                    inst_or| inst_and |inst_andi | inst_xori |inst_nor | inst_sllv |inst_srlv | inst_srav |
                    inst_srl | inst_sra |inst_bgezal | inst_bltzal |inst_jalr |
-                   inst_lw | inst_xor |inst_slt |inst_slti|inst_sltiu|inst_sltu;
+                   inst_lw | inst_xor |inst_slt |inst_slti|inst_sltiu|inst_sltu| inst_mfhi| inst_mflo;
 
 
     //写入到rd
     // store in [rd]
     assign sel_rf_dst[0] = inst_subu|inst_sub|inst_addu|inst_add|inst_sll|inst_sllv |
                            inst_srlv | inst_srav |inst_srl | inst_sra|inst_jalr|
-                           inst_and |inst_or|inst_nor | inst_xor|inst_slt |inst_sltu;
+                           inst_and |inst_or|inst_nor | inst_xor|inst_slt |inst_sltu| inst_mfhi| inst_mflo;
     // store in [rt] 
     assign sel_rf_dst[1] = inst_ori | inst_lui | inst_addiu|inst_addi|inst_andi |inst_xori | 
                            inst_slti|inst_sltiu|inst_lw;
