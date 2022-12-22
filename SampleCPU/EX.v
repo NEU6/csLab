@@ -113,14 +113,11 @@ module EX(
     );
 
     //结果
-    assign ex_result = alu_result;
-    assign data_sram_en = data_ram_en;
-    //写使能信号
-    assign data_sram_wen = data_ram_wen;
-    //内存的地址
-    assign data_sram_addr = ex_result; 
-    //写数据
-    assign data_sram_wdata = rf_rdata2;
+    assign ex_result =  hi_read ? hi_out_id:
+                        lo_read ? lo_out_id:
+                        alu_result;
+    
+
 
     // // EX to MEM
     // assign ex_to_mem_bus = {
@@ -305,7 +302,7 @@ module EX(
         ex_result           
     };
     
-    
+    //写数据
     //assign data_sram_wdata = rf_rdata2;
     assign data_sram_en = data_ram_en;
     //写使能信号 
