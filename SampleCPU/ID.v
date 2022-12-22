@@ -403,7 +403,8 @@ module ID(
                     | {5{sel_rf_dst[2]}} & 32'd31;
 
     // 0 from alu_res ; 1 from ld_res
-    assign sel_rf_res = inst_lw; 
+    //assign sel_rf_res = inst_lw; 
+    assign sel_rf_res = 1'b0; 
 
     assign id_to_ex_bus = {
         data_ram_readen,
