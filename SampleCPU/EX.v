@@ -173,8 +173,8 @@ module EX(
     //ex段stall请求
     //reg stallreq_for_div;
     //assign stallreq_for_ex = stallreq_for_div;
-
     assign if_div=inst_div|inst_divu;   
+    
     assign stallreq_for_ex = (if_div) & div_ready_i==1'b0;
     assign div_ready_to_id = div_ready_i;
 
