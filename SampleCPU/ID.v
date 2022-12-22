@@ -39,6 +39,8 @@ module ID(
     wire [4:0] wb_rf_waddr;
     wire [31:0] wb_rf_wdata;
     //hilo
+    wire hi_read; 
+    wire lo_read;
     wire ex_rf_hi_we;           
     wire ex_rf_lo_we;           
     wire [31:0] ex_rf_hi;       
@@ -49,7 +51,6 @@ module ID(
 
     //stall相关
     reg inst_stall_en;
-    reg[31:0] inst_stall;
 
     always @ (posedge clk) begin
         if (rst) begin
