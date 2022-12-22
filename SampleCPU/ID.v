@@ -39,73 +39,51 @@ module ID(
     wire [4:0] wb_rf_waddr;
     wire [31:0] wb_rf_wdata;
     //hilo
-    wire hi_read; 
-    wire lo_read; 
-    wire ex_id_wreg;
-    wire [4:0] ex_id_waddr;
-    wire [31:0] ex_id_wdata;
-    wire ex_id_hi_we;          
-    wire ex_id_lo_we;          
-    wire [31:0] ex_id_hi;      
-    wire [31:0] ex_id_lo;      
-
-    wire ex_rf_hi_we;          
-    wire ex_rf_lo_we;          
+    wire ex_rf_hi_we;           
+    wire ex_rf_lo_we;           
     wire [31:0] ex_rf_hi;       
     wire [31:0] ex_rf_lo;       
-      
-    wire mem_id_wreg;
-    wire [4:0] mem_id_waddr;
-    wire [31:0] mem_id_wdata;
-    wire mem_id_hi_we;          
-    wire mem_id_lo_we;         
-    wire [31:0] mem_id_hi;     
-    wire [31:0] mem_id_lo;     
-    
-    wire wb_id_wreg;
-    wire [4:0] wb_id_waddr;
-    wire [31:0] wb_id_wdata;
-    wire wb_id_hi_we;          
-    wire wb_id_lo_we;          
-    wire [31:0] wb_id_hi;      
-    wire [31:0] wb_id_lo;      
-    wire [31:0] hi_out; 
-    wire [31:0] lo_out; 
+
     
 
 
+    //stall相关
+    reg inst_stall_en;
+    reg[31:0] inst_stall;
 
     always @ (posedge clk) begin
         if (rst) begin
-            if_to_id_bus_r <= `IF_TO_ID_WD'b0;        
+            if_to_id_bus_r <= `IF_TO_ID_WD'b0;
+            inst_stall_en <=`NoStop;           
         end
         // else if (flush) begin
         //     ic_to_id_bus <= `IC_TO_ID_WD'b0;
         // end
         else if (stall[1]==`Stop && stall[2]==`NoStop) begin
             if_to_id_bus_r <= `IF_TO_ID_WD'b0;
+            inst_stall_en <= `NoStop;   
         end
         else if (stall[1]==`NoStop) begin
             if_to_id_bus_r <= if_to_id_bus;
+            inst_stall_en <= `NoStop;   
+        end
+        else if(stall[2] == `Stop && div_ready_to_id==1'b0) begin
+            inst_stall_en <= `Stop;
         end
     end
 
-    //stall相关
-    reg inst_stall_en;
-    reg[31:0] inst_stall;
-
-    //延迟槽
-    always @ (posedge clk) begin
-        inst_stall_en<=`NoStop;
-        inst_stall<=32'b0;
-        if(stall[1]==`Stop)begin
-            inst_stall_en<=`Stop;
-            inst_stall<=inst;
-        end
-    end
+    // //延迟槽
+    // always @ (posedge clk) begin
+    //     inst_stall_en<=`NoStop;
+    //     inst_stall<=32'b0;
+    //     if(stall[1]==`Stop)begin
+    //         inst_stall_en<=`Stop;
+    //         inst_stall<=inst;
+    //     end
+    // end
 
     //判断当前指令
-    assign inst = inst_stall_en?inst_stall:inst_sram_rdata;
+    assign inst = inst_stall_en?inst:inst_sram_rdata;
 
     assign {
         ce,
