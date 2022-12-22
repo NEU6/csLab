@@ -5,7 +5,8 @@ module ID(
     // input wire flush,
     input wire [`StallBus-1:0] stall,
     
-    //output wire stallreq,
+    //暂停请求
+    output wire stallreq_for_id,
 
     input wire [`IF_TO_ID_WD-1:0] if_to_id_bus,
 
@@ -24,8 +25,7 @@ module ID(
 
     //气泡
     input wire is_lw,
-    //暂停请求
-    output wire stallreq_for_id,
+
     //除法
     input wire div_ready_to_id
 );
@@ -38,6 +38,7 @@ module ID(
     wire wb_rf_we;
     wire [4:0] wb_rf_waddr;
     wire [31:0] wb_rf_wdata;
+
     //hilo
     wire hi_read; 
     wire lo_read;
@@ -172,8 +173,7 @@ module ID(
     assign offset = inst[15:0];
     assign sel = inst[2:0];
 
-    //气泡请求
-    assign stallreq_for_id=(is_lw==1'b1&((rs==ex_to_id_bus[36:32])|(rt==ex_to_id_bus[36:32])));
+
 
     wire inst_ori, inst_lui, inst_addiu, inst_beq;
     //新增指令
@@ -207,6 +207,9 @@ module ID(
     wire op_and, op_nor, op_or, op_xor;
     wire op_sll, op_srl, op_sra, op_lui;
     wire inst_div, inst_divu, inst_mult, inst_multu;
+    
+    //气泡请求
+    assign stallreq_for_id=(is_lw&((rs==ex_to_id_bus[36:32])|(rt==ex_to_id_bus[36:32])))? `Stop: `NoStop;
 
     decoder_6_64 u0_decoder_6_64(
     	.in  (opcode  ),
@@ -388,7 +391,8 @@ module ID(
     // store in [rd]
     assign sel_rf_dst[0] = inst_subu|inst_sub|inst_addu|inst_add|inst_sll|inst_sllv |
                            inst_srlv | inst_srav |inst_srl | inst_sra|inst_jalr|
-                           inst_and |inst_or|inst_nor | inst_xor|inst_slt |inst_sltu| inst_mfhi| inst_mflo;
+                           inst_and |inst_or|inst_nor | inst_xor|inst_slt |inst_sltu| 
+                           inst_mfhi| inst_mflo;
     // store in [rt] 
     assign sel_rf_dst[1] = inst_ori | inst_lui | inst_addiu|inst_addi|inst_andi |inst_xori | 
                            inst_slti|inst_sltiu|inst_lw|
