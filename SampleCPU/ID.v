@@ -221,6 +221,8 @@ module ID(
 
     //hilo
     wire inst_movn,inst_movz,inst_mfhi,inst_mflo,inst_mthi,inst_mtlo;   
+    //访存
+    wire inst_lb,inst_lbu, inst_lh, inst_lhu, inst_sb,  inst_sh;
 
     wire op_add, op_sub, op_slt, op_sltu;
     wire op_and, op_nor, op_or, op_xor;
@@ -319,7 +321,8 @@ module ID(
     assign sel_alu_src1[0] = inst_ori | inst_addiu | inst_subu|inst_sub|inst_addu |inst_add|inst_addi|
                             inst_or|inst_and |inst_andi |inst_xori |inst_nor |inst_srav |inst_srlv | 
                             inst_lw |inst_sllv |inst_sw|inst_xor|inst_slt|inst_slti|inst_jalr |
-                            inst_sltiu|inst_sltu| inst_div  | inst_divu | inst_mult | inst_multu;
+                            inst_sltiu|inst_sltu| inst_div  | inst_divu | inst_mult | inst_multu|
+                            inst_sh | inst_sb | inst_lhu | inst_lh | inst_lbu |  inst_lb ;
 
     // pc to reg1
     assign sel_alu_src1[1] = inst_jal|
@@ -333,10 +336,12 @@ module ID(
     assign sel_alu_src2[0] = inst_subu|inst_addu|inst_add|inst_sll|inst_sllv |
                              inst_srlv | inst_srav |inst_sra | inst_srl |
                              inst_and |inst_or|inst_nor |inst_xor|inst_sub|
-                            inst_slt|inst_sltu|inst_div  | inst_divu | inst_mult | inst_multu;
+                            inst_slt|inst_sltu|inst_div  | inst_divu | inst_mult | inst_multu|
+                            inst_sh | inst_sb | inst_lhu | inst_lh | inst_lbu |  inst_lb ;
     
     // imm_sign_extend to reg2
-    assign sel_alu_src2[1] = inst_lui | inst_addiu|inst_addi|inst_lw|inst_slti|inst_sltiu|inst_sw;
+    assign sel_alu_src2[1] = inst_lui | inst_addiu|inst_addi|inst_lw|inst_slti|inst_sltiu|inst_sw|
+                    inst_sh | inst_sb | inst_lhu | inst_lh | inst_lbu|inst_lb;
 
     // 32'b8 to reg2
     assign sel_alu_src2[2] = inst_j|inst_jal|inst_bltzal|inst_bgezal |inst_jalr ;
@@ -347,7 +352,8 @@ module ID(
 
     //选操作逻辑
     assign op_add = inst_addiu|inst_jal|inst_addu|inst_add|inst_addi|
-                    inst_bltzal| inst_bgezal|inst_jalr|inst_lw |inst_sw;
+                    inst_bltzal| inst_bgezal|inst_jalr|inst_lw |inst_sw|
+                    inst_sh | inst_sb | inst_lhu | inst_lh | inst_lbu |  inst_lb ;
     assign op_sub = inst_sub|inst_subu;
     assign op_slt = inst_slt|inst_slti;
     assign op_sltu = inst_sltu|inst_sltiu;
@@ -367,19 +373,19 @@ module ID(
 
     //存储器相关
     // load and store enable
-    assign data_ram_en = inst_lw |inst_sw;
+    assign data_ram_en = inst_lw |inst_sw| inst_sh | inst_sb | inst_lhu | inst_lh | inst_lbu|inst_lb;
 
     // write enable
     assign data_ram_wen = inst_sw?4'b1111:4'b0000;
     
     //mem read enable
     assign data_ram_readen =  inst_lw  ? 4'b1111 
-                            //  :inst_lb  ? 4'b0001 
-                            //  :inst_lbu ? 4'b0010
-                            //  :inst_lh  ? 4'b0011
-                            //  :inst_lhu ? 4'b0100
-                            //  :inst_sb  ? 4'b0101
-                            //  :inst_sh  ? 4'b0111
+                             :inst_lb  ? 4'b0001 
+                             :inst_lbu ? 4'b0010
+                             :inst_lh  ? 4'b0011
+                             :inst_lhu ? 4'b0100
+                             :inst_sb  ? 4'b0101
+                             :inst_sh  ? 4'b0111
                              :4'b0000;
 
     wire hi_write;//LL
@@ -395,7 +401,8 @@ module ID(
     assign rf_we = inst_ori | inst_lui | inst_addiu|inst_addi|inst_subu|inst_sub|inst_jal|inst_addu|inst_add|inst_sll|
                    inst_or| inst_and |inst_andi | inst_xori |inst_nor | inst_sllv |inst_srlv | inst_srav |
                    inst_srl | inst_sra |inst_bgezal | inst_bltzal |inst_jalr |
-                   inst_lw | inst_xor |inst_slt |inst_slti|inst_sltiu|inst_sltu| inst_mfhi| inst_mflo;
+                   inst_lw | inst_xor |inst_slt |inst_slti|inst_sltiu|inst_sltu| inst_mfhi| inst_mflo|
+                   inst_lhu | inst_lh | inst_lbu | inst_lb;
 
 
     //写入到rd
@@ -405,7 +412,8 @@ module ID(
                            inst_and |inst_or|inst_nor | inst_xor|inst_slt |inst_sltu| inst_mfhi| inst_mflo;
     // store in [rt] 
     assign sel_rf_dst[1] = inst_ori | inst_lui | inst_addiu|inst_addi|inst_andi |inst_xori | 
-                           inst_slti|inst_sltiu|inst_lw;
+                           inst_slti|inst_sltiu|inst_lw|
+                           inst_lhu | inst_lh | inst_lbu | inst_lb;
     // store in [31]
     assign sel_rf_dst[2] = inst_jal|
                            inst_bltzal | inst_bgezal;
