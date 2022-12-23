@@ -46,8 +46,8 @@ module ID(
     wire ex_rf_lo_we;           
     wire [31:0] ex_rf_hi;       
     wire [31:0] ex_rf_lo;       
-
-    
+    wire [31:0] hi_out;        
+    wire [31:0] lo_out;    
 
 
     //stall相关
