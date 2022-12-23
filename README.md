@@ -18,3 +18,5 @@
 12.13 添加addi、sub、and、andi、xori、nor、sllv、sra、srav、srl、srlv指令通过点36
 
 12.17 添加bgez,bgtz,blez,bltz,bltzal,bgezal,jalr指令通过点43
+
+12.23 添加hi_lo寄存器，实现div等指令通过点51
