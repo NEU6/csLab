@@ -45,6 +45,7 @@ module MEM(
     wire lo_we;         
     wire [31:0] hi_ex; 
     wire [31:0] lo_ex; 
+    assign mem_result=data_sram_rdata;
     assign {
         data_ram_readen,         
         hi_we,                   
@@ -60,10 +61,9 @@ module MEM(
         ex_result       // 31:0
     } =  ex_to_mem_bus_r;
 
-    //
-    assign mem_result=data_sram_rdata;
+    
 
-    //assign rf_wdata = sel_rf_res ? mem_result : ex_result;
+    // assign rf_wdata = sel_rf_res ? mem_result : ex_result;
     assign rf_wdata =     (data_ram_readen==4'b1111 && data_ram_en==1'b1) ? data_sram_rdata 
                         : (data_ram_readen==4'b0001 && data_ram_en==1'b1 && ex_result[1:0]==2'b00) ?({{24{data_sram_rdata[7]}},data_sram_rdata[7:0]})
                         : (data_ram_readen==4'b0001 && data_ram_en==1'b1 && ex_result[1:0]==2'b01) ?({{24{data_sram_rdata[15]}},data_sram_rdata[15:8]})

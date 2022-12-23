@@ -18,7 +18,7 @@ module EX(
     output wire [`EX_TO_ID_WD-1:0] ex_to_id_bus,
 
     //气泡
-    output wire is_lw
+    output wire is_lw,
     //ex段stall请求
     output wire stallreq_for_ex,
     //
@@ -55,7 +55,18 @@ module EX(
     wire sel_rf_res;
     wire [31:0] rf_rdata1, rf_rdata2;
     reg is_in_delayslot;
-
+    wire hi_we;         
+    wire lo_we;         
+    wire [31:0] hi_ex; 
+    wire [31:0] lo_ex; 
+    wire if_mul;        
+    wire if_div;        
+    wire [31:0] hi_out_id;         
+    wire [31:0] lo_out_id;         
+    wire hi_read; 
+    wire lo_read; 
+    wire hi_write;
+    wire lo_write;
     //打开
     assign {
         data_ram_readen, 
@@ -102,14 +113,11 @@ module EX(
     );
 
     //结果
-    assign ex_result = alu_result;
-    assign data_sram_en = data_ram_en;
-    //写使能信号
-    assign data_sram_wen = data_ram_wen;
-    //内存的地址
-    assign data_sram_addr = ex_result; 
-    //写数据
-    assign data_sram_wdata = rf_rdata2;
+    assign ex_result =  hi_read ? hi_out_id:
+                        lo_read ? lo_out_id:
+                        alu_result;
+    
+
 
     // // EX to MEM
     // assign ex_to_mem_bus = {
@@ -163,11 +171,11 @@ module EX(
     assign inst_divu   = inst[31:26]==6'b00_0000&inst[15:6]==10'b00000_00000&inst[5:0]==6'b01_1011;
     wire div_ready_i;
     //ex段stall请求
-    reg stallreq_for_div;
-    assign stallreq_for_ex = stallreq_for_div;
-
+    //reg stallreq_for_div;
+    //assign stallreq_for_ex = stallreq_for_div;
     assign if_div=inst_div|inst_divu;   
-    //assign stallreq_for_ex = (if_div) & div_ready_i==1'b0;
+    
+    assign stallreq_for_ex = (if_div) & div_ready_i==1'b0;
     assign div_ready_to_id = div_ready_i;
 
     reg [31:0] div_opdata1_o;
@@ -189,14 +197,14 @@ module EX(
 
     always @ (*) begin
         if (rst) begin
-            stallreq_for_div = `NoStop;
+            //stallreq_for_div = `NoStop;
             div_opdata1_o = `ZeroWord;
             div_opdata2_o = `ZeroWord;
             div_start_o = `DivStop;
             signed_div_o = 1'b0;
         end
         else begin
-            stallreq_for_div = `NoStop;
+            //stallreq_for_div = `NoStop;
             div_opdata1_o = `ZeroWord;
             div_opdata2_o = `ZeroWord;
             div_start_o = `DivStop;
@@ -208,21 +216,21 @@ module EX(
                         div_opdata2_o = rf_rdata2;
                         div_start_o = `DivStart;
                         signed_div_o = 1'b1;
-                        stallreq_for_div = `Stop;
+                        //stallreq_for_div = `Stop;
                     end
                     else if (div_ready_i == `DivResultReady) begin
                         div_opdata1_o = rf_rdata1;
                         div_opdata2_o = rf_rdata2;
                         div_start_o = `DivStop;
                         signed_div_o = 1'b1;
-                        stallreq_for_div = `NoStop;
+                        //stallreq_for_div = `NoStop;
                     end
                     else begin
                         div_opdata1_o = `ZeroWord;
-                        div_opdata2_stallreq_for_divo = `ZeroWord;
+                        div_opdata2_o = `ZeroWord;
                         div_start_o = `DivStop;
                         signed_div_o = 1'b0;
-                        stallreq_for_div = `NoStop;
+                        //stallreq_for_div = `NoStop;
                     end
                 end
                 2'b01:begin
@@ -231,21 +239,21 @@ module EX(
                         div_opdata2_o = rf_rdata2;
                         div_start_o = `DivStart;
                         signed_div_o = 1'b0;
-                        stallreq_for_div = `Stop;
+                        //stallreq_for_div = `Stop;
                     end
                     else if (div_ready_i == `DivResultReady) begin
                         div_opdata1_o = rf_rdata1;
                         div_opdata2_o = rf_rdata2;
                         div_start_o = `DivStop;
                         signed_div_o = 1'b0;
-                        stallreq_for_div = `NoStop;
+                        //stallreq_for_div = `NoStop;
                     end
                     else begin
                         div_opdata1_o = `ZeroWord;
                         div_opdata2_o = `ZeroWord;
                         div_start_o = `DivStop;
                         signed_div_o = 1'b0;
-                        stallreq_for_div = `NoStop;
+                        //stallreq_for_div = `NoStop;
                     end
                 end
                 default:begin
@@ -285,16 +293,16 @@ module EX(
     
     //新增
     assign ex_to_id_bus={
-        rf_we,
-        rf_waddr,
-        ex_result,
         hi_we,                   
         lo_we,                   
         hi_ex,                    
-        lo_ex                     
+        lo_ex,
+        rf_we,
+        rf_waddr,
+        ex_result           
     };
     
-    
+    //写数据
     //assign data_sram_wdata = rf_rdata2;
     assign data_sram_en = data_ram_en;
     //写使能信号 

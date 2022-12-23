@@ -23,8 +23,8 @@ module regfile(
     output wire [31:0] lo_out
 );
     reg [31:0] reg_array [31:0];
-    reg [31:0] reg_hi;//定义hi寄存器  (LL)
-    reg [31:0] reg_lo;//定义lo寄存器  (LL)
+    reg [31:0] reg_hi;//定义hi寄存器 
+    reg [31:0] reg_lo;//定义lo寄存器
     // write
     always @ (posedge clk) begin
         if (we && waddr!=5'b0) begin
