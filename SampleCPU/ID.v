@@ -131,6 +131,7 @@ module ID(
     wire [31:0] rdata1, rdata2;
 
     //hl_bus
+    wire [67:0] hl_bus;
     assign hl_bus={
         ex_rf_hi_we,
         ex_rf_lo_we,
