@@ -131,6 +131,7 @@ module ID(
     wire [31:0] rdata1, rdata2;
 
     //hl_bus
+    wire [67:0] hl_bus;
     assign hl_bus={
         ex_rf_hi_we,
         ex_rf_lo_we,
@@ -290,7 +291,8 @@ module ID(
     assign inst_div     = op_d[6'b00_000?]&inst[15:6]==10'b00000_00000&func_d[6'b01_1010];
     assign inst_divu    = op_d[6'b00_0000]&inst[15:6]==10'b00000_00000&func_d[6'b01_1011];
     assign inst_mult    = op_d[6'b00_0000]&inst[15:6]==10'b00000_00000&func_d[6'b01_1000];
-    assign inst_multu   = op_d[6'b00_0000]&inst[15:6]==10'b00000_00000&func_d[6'b01_1001];    assign inst_mtlo    = op_d[6'b00_0000]&inst[20:11]==10'b00000_00000&sa==5'b00000&func_d[6'b01_0011];
+    assign inst_multu   = op_d[6'b00_0000]&inst[15:6]==10'b00000_00000&func_d[6'b01_1001];    
+    assign inst_mtlo    = op_d[6'b00_0000]&inst[20:11]==10'b00000_00000&sa==5'b00000&func_d[6'b01_0011];
     //访存指令
     assign inst_lb      = op_d[6'b10_0000];
     assign inst_lbu     = op_d[6'b10_0100];
@@ -303,7 +305,7 @@ module ID(
     assign sel_alu_src1[0] = inst_ori | inst_addiu | inst_subu|inst_sub|inst_addu |inst_add|inst_addi|
                             inst_or|inst_and |inst_andi |inst_xori |inst_nor |inst_srav |inst_srlv | 
                             inst_lw |inst_sllv |inst_sw|inst_xor|inst_slt|inst_slti|inst_jalr |
-                            inst_sltiu|inst_sltu| inst_div  | inst_divu | inst_mult | inst_multu|
+                            inst_sltiu|inst_sltu| inst_div  | inst_divu | inst_mult | inst_multu|inst_mthi | inst_mtlo|
                             inst_sh | inst_sb | inst_lhu | inst_lh | inst_lbu |  inst_lb ;
 
     // pc to reg1
@@ -398,8 +400,7 @@ module ID(
                            inst_slti|inst_sltiu|inst_lw|
                            inst_lhu | inst_lh | inst_lbu | inst_lb;
     // store in [31]
-    assign sel_rf_dst[2] = inst_jal|
-                           inst_bltzal | inst_bgezal;
+    assign sel_rf_dst[2] = inst_jal | inst_bltzal | inst_bgezal;
 
     // sel for regfile address
     assign rf_waddr = {5{sel_rf_dst[0]}} & rd 
