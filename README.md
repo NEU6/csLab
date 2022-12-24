@@ -20,3 +20,5 @@
 12.17 添加bgez,bgtz,blez,bltz,bltzal,bgezal,jalr指令通过点43
 
 12.23 添加hi_lo寄存器，实现div等指令通过点51
+
+12.24 实现lb、lh、sb、sh等指令通过点64
