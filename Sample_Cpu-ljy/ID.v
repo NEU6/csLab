@@ -309,7 +309,7 @@ module ID(
     // rs to reg1
     assign sel_alu_src1[0] = inst_ori | inst_addiu | inst_subu|inst_sub|inst_addu |inst_add|inst_addi|
                             inst_or|inst_and |inst_andi |inst_xori |inst_nor |inst_srav |inst_srlv | 
-                            inst_lw |inst_sllv |inst_sw|inst_xor|inst_slt|inst_slti|inst_jalr |
+                            inst_lw |inst_sllv |inst_sw|inst_xor|inst_slt|inst_slti|inst_jalr |inst_mthi|inst_mtlo|
                             inst_sltiu|inst_sltu;
 
     // pc to reg1
