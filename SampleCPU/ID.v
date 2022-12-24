@@ -290,7 +290,8 @@ module ID(
     assign inst_div     = op_d[6'b00_000?]&inst[15:6]==10'b00000_00000&func_d[6'b01_1010];
     assign inst_divu    = op_d[6'b00_0000]&inst[15:6]==10'b00000_00000&func_d[6'b01_1011];
     assign inst_mult    = op_d[6'b00_0000]&inst[15:6]==10'b00000_00000&func_d[6'b01_1000];
-    assign inst_multu   = op_d[6'b00_0000]&inst[15:6]==10'b00000_00000&func_d[6'b01_1001];    assign inst_mtlo    = op_d[6'b00_0000]&inst[20:11]==10'b00000_00000&sa==5'b00000&func_d[6'b01_0011];
+    assign inst_multu   = op_d[6'b00_0000]&inst[15:6]==10'b00000_00000&func_d[6'b01_1001];    
+    assign inst_mtlo    = op_d[6'b00_0000]&inst[20:11]==10'b00000_00000&sa==5'b00000&func_d[6'b01_0011];
     //访存指令
     assign inst_lb      = op_d[6'b10_0000];
     assign inst_lbu     = op_d[6'b10_0100];
@@ -398,8 +399,7 @@ module ID(
                            inst_slti|inst_sltiu|inst_lw|
                            inst_lhu | inst_lh | inst_lbu | inst_lb;
     // store in [31]
-    assign sel_rf_dst[2] = inst_jal|
-                           inst_bltzal | inst_bgezal;
+    assign sel_rf_dst[2] = inst_jal | inst_bltzal | inst_bgezal;
 
     // sel for regfile address
     assign rf_waddr = {5{sel_rf_dst[0]}} & rd 
