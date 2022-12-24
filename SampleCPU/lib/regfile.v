@@ -32,6 +32,16 @@ module regfile(
         end
     end
 
+    //hi_lo write
+    always @ (posedge clk) begin
+        if (hi_we) begin
+            reg_hi <= hi_i;
+        end  
+        if(lo_we) begin
+            reg_lo <= lo_i;
+        end
+    end
+
     //数据相关新线打开
     wire ex_id_hi_we;          
     wire ex_id_lo_we;           
