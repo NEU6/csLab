@@ -50,7 +50,7 @@ module alu(
     //match_result的即为alu_src2的最低位匹配到的位置
     //循环匹配
     integer i=0;
-    while(match==25'b0) begin
+    while(matched==25'b0) begin
         if(alu_sr1[7:0] != alu_src2[7:0]) begin
             matched[i]=0;
         end
