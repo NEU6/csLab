@@ -52,7 +52,7 @@ module alu(
     integer i=0;
     while (i<25) begin
         if(alu_sr1[7:0] != alu_src2[7:0]) begin
-            matched[i]=1;
+            match_result[i]=1;
         end
         else begin
             break;
@@ -62,9 +62,6 @@ module alu(
         //加一位
         i=i+1;
     end
-
-
-    assign match_result=i-1;
 
 
 
