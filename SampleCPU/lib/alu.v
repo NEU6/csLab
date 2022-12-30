@@ -49,8 +49,11 @@ module alu(
     //最后将matched的低位赋值给match_result
     //match_result的即为alu_src2的最低位匹配到的位置
     //循环匹配
-    
-    integer i=0;
+
+    // 定义一个变量，用于控制循环的迭代次数
+    integer i;
+    // 初始化 i 变量
+    i = 0;
     while (i<=24) begin
         if(alu_sr1[7:0] != alu_src2[7:0]) begin
             match_result[i]=1;
@@ -59,7 +62,7 @@ module alu(
             disable;
         end
         //alu_src2右移1位舍弃最低位,补0
-        alu_src2={0'b0, alu_src2[31:1]}
+        alu_src2={0'b0, alu_src2[31:1]};
         //加一位
         i=i+1;
     end
