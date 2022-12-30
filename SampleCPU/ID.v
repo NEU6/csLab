@@ -359,9 +359,15 @@ module ID(
     assign op_sra = inst_sra | inst_srav;
     assign op_lui = inst_lui;
 
+    //match
+    wire op_match;
+    assign op_match=inst_match;
+
     assign alu_op = {op_add, op_sub, op_slt, op_sltu,
                      op_and, op_nor, op_or, op_xor,
-                     op_sll, op_srl, op_sra, op_lui};
+                     op_sll, op_srl, op_sra, op_lui,
+                     //match
+                     op_match};
 
 
     //存储器相关
