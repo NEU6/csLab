@@ -208,6 +208,9 @@ module ID(
     wire op_and, op_nor, op_or, op_xor;
     wire op_sll, op_srl, op_sra, op_lui;
     wire inst_div, inst_divu, inst_mult, inst_multu;
+
+    //match
+    wire inst_match;
     
     //气泡请求
     assign stallreq_for_id=(is_lw&((rs==ex_to_id_bus[36:32])|(rt==ex_to_id_bus[36:32])))? `Stop: `NoStop;
@@ -300,13 +303,18 @@ module ID(
     assign inst_lhu     = op_d[6'b10_0101];
     assign inst_sb      = op_d[6'b10_1000];
     assign inst_sh      = op_d[6'b10_1001];
+
+    //match
+    assign inst_march      = op_d[6'b01_1100]&sa==5'b11100&func_d[6'b11_0111];;
+
     //取操作数
     // rs to reg1
     assign sel_alu_src1[0] = inst_ori | inst_addiu | inst_subu|inst_sub|inst_addu |inst_add|inst_addi|
                             inst_or|inst_and |inst_andi |inst_xori |inst_nor |inst_srav |inst_srlv | 
                             inst_lw |inst_sllv |inst_sw|inst_xor|inst_slt|inst_slti|inst_jalr |
                             inst_sltiu|inst_sltu| inst_div  | inst_divu | inst_mult | inst_multu|inst_mthi | inst_mtlo|
-                            inst_sh | inst_sb | inst_lhu | inst_lh | inst_lbu |  inst_lb ;
+                            inst_sh | inst_sb | inst_lhu | inst_lh | inst_lbu |  inst_lb |
+                            inst_march;
 
     // pc to reg1
     assign sel_alu_src1[1] = inst_jal|
@@ -321,7 +329,8 @@ module ID(
                              inst_srlv | inst_srav |inst_sra | inst_srl |
                              inst_and |inst_or|inst_nor |inst_xor|inst_sub|
                             inst_slt|inst_sltu|inst_div  | inst_divu | inst_mult | inst_multu|
-                            inst_sh | inst_sb | inst_lhu | inst_lh | inst_lbu |  inst_lb ;
+                            inst_sh | inst_sb | inst_lhu | inst_lh | inst_lbu |  inst_lb |
+                            inst_march;
     
     // imm_sign_extend to reg2
     assign sel_alu_src2[1] = inst_lui | inst_addiu|inst_addi|inst_lw|inst_slti|inst_sltiu|inst_sw|
