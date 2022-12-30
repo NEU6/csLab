@@ -41,7 +41,7 @@ module alu(
     //match
     wire [31:0] match_result;
     wire [24:0] matched;
-    assgin matched=25'b0;
+    assign matched=25'b0;
 
     //用match_rs和alu_src2从低位开始取8位进行循环比较
     //如果相等则matched的对应位为1
@@ -49,8 +49,7 @@ module alu(
     //最后将matched的低位赋值给match_result
     //match_result的即为alu_src2的最低位匹配到的位置
     //循环匹配
-    integer i;
-    assign i=0;
+    integer i=0;
     while(match==25'b0) begin
         if(alu_sr1[7:0] != alu_src2[7:0]) begin
             matched[i]=0;
