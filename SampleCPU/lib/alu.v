@@ -49,22 +49,23 @@ module alu(
     //最后将matched的低位赋值给match_result
     //match_result的即为alu_src2的最低位匹配到的位置
     //循环匹配
-    integer i=0;
-    while (i<25) 
-    begin
-        if(alu_sr1[7:0] != alu_src2[7:0]) begin
-            match_result[i]=1;
+    
+    initial begin
+        integer i=0;
+        while (i<25) 
+        begin
+            if(alu_sr1[7:0] != alu_src2[7:0]) begin
+                match_result[i]=1;
+            end
+            else begin
+                disable;
+            end
+            //alu_src2右移1位舍弃最低位
+            alu_src2=alu_src2>>1;
+            //加一位
+            i=i+1;
         end
-        else begin
-            disable;
-        end
-        //alu_src2右移1位舍弃最低位
-        alu_src2=alu_src2>>1;
-        //加一位
-        i=i+1;
     end
-
-
 
     assign and_result = alu_src1 & alu_src2;
     assign or_result = alu_src1 | alu_src2;
