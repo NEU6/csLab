@@ -18,14 +18,10 @@ module alu(
     wire op_srl;
     wire op_sra;
     wire op_lui;
-    //match
-    wire op_match;
 
     assign {op_add, op_sub, op_slt, op_sltu,
             op_and, op_nor, op_or, op_xor,
-            op_sll, op_srl, op_sra, op_lui,
-            //match
-            op_match} = alu_control;
+            op_sll, op_srl, op_sra, op_lui} = alu_control;
     
     wire [31:0] add_sub_result;
     wire [31:0] slt_result;
@@ -38,34 +34,6 @@ module alu(
     wire [31:0] srl_result;
     wire [31:0] sra_result;
     wire [31:0] lui_result;
-    //match
-    wire [31:0] match_result;
-    // wire [24:0] matched;
-    // assign matched=25'b0;
-
-    //用match_rs和alu_src2从低位开始取8位进行循环比较
-    //如果相等则matched的对应位为1
-    //如果不相等则matched的对应位为0
-    //最后将matched的低位赋值给match_result
-    //match_result的即为alu_src2的最低位匹配到的位置
-    //循环匹配
-
-    // 定义一个变量，用于控制循环的迭代次数
-    integer i;
-    // 初始化 i 变量
-    i = 0;
-    while (i<=24) begin
-        if(alu_sr1[7:0] != alu_src2[7:0]) begin
-            match_result[i]=1;
-        end
-        else begin
-            disable;
-        end
-        //alu_src2右移1位舍弃最低位,补0
-        alu_src2={0'b0, alu_src2[31:1]};
-        //加一位
-        i=i+1;
-    end
 
     assign and_result = alu_src1 & alu_src2;
     assign or_result = alu_src1 | alu_src2;
@@ -107,8 +75,6 @@ module alu(
                       | ({32{op_sll         }} & sll_result)
                       | ({32{op_srl         }} & srl_result)
                       | ({32{op_sra         }} & sra_result)
-                      | ({32{op_lui         }} & lui_result)
-                      //match
-                      | ({32{op_match       }} & match_result);
+                      | ({32{op_lui         }} & lui_result);
                       
 endmodule

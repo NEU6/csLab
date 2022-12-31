@@ -27,3 +27,6 @@
 `define EX_TO_ID_WD 104
 `define MEM_TO_ID_WD 104
 `define WB_TO_ID_WD 104
+
+//hi_lo
+`define HI_LO_WD 68

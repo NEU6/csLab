@@ -74,7 +74,7 @@ module ID(
         end
     end
 
-    // //延迟槽
+    // //延迟�?
     // always @ (posedge clk) begin
     //     inst_stall_en<=`NoStop;
     //     inst_stall<=32'b0;
@@ -130,9 +130,9 @@ module ID(
 
     wire [31:0] rdata1, rdata2;
 
-    //hl_bus
-    wire [67:0] hl_bus;
-    assign hl_bus={
+    //hi_lo_bus
+    wire [`HI_LO_WD-1:0] hi_lo_bus;
+    assign hi_lo_bus={
         ex_rf_hi_we,
         ex_rf_lo_we,
         hi_read,
@@ -155,7 +155,7 @@ module ID(
         .mem_to_id_bus (mem_to_id_bus),
         .wb_to_id_bus (wb_to_id_bus),
         //hlbus
-        .hl_bus (hl_bus),
+        .hi_lo_bus (hi_lo_bus),
         .hi_out(hi_out),
         .lo_out(lo_out)
     );
@@ -163,11 +163,11 @@ module ID(
     //译码
     assign opcode = inst[31:26];//运算操作
     assign rs = inst[25:21];//源寄存器
-    assign rt = inst[20:16];//目的寄存器
+    assign rt = inst[20:16];//�?的寄存器
     assign rd = inst[15:11];
     assign sa = inst[10:6];
     assign func = inst[5:0];
-    assign imm = inst[15:0];//立即数
+    assign imm = inst[15:0];//立即�?
     assign instr_index = inst[25:0];
     assign code = inst[25:6];
     assign base = inst[25:21];
@@ -177,7 +177,7 @@ module ID(
 
 
     wire inst_ori, inst_lui, inst_addiu, inst_beq;
-    //新增指令
+    //新�?�指�?
     wire inst_subu;
     wire inst_sub;
     wire inst_j;
@@ -208,9 +208,6 @@ module ID(
     wire op_and, op_nor, op_or, op_xor;
     wire op_sll, op_srl, op_sra, op_lui;
     wire inst_div, inst_divu, inst_mult, inst_multu;
-
-    //match
-    wire inst_match;
     
     //气泡请求
     assign stallreq_for_id=(is_lw&((rs==ex_to_id_bus[36:32])|(rt==ex_to_id_bus[36:32])))? `Stop: `NoStop;
@@ -241,7 +238,7 @@ module ID(
     assign inst_addiu   = op_d[6'b00_1001];
     assign inst_beq     = op_d[6'b00_0100];
 
-    //新增指令
+    //新�?�指�?
     assign inst_subu    = op_d[6'b00_0000]&sa==5'b00000&func_d[6'b10_0011];
     assign inst_sub     = op_d[6'b00_0000] & func_d[6'b10_0010];
     assign inst_j       = op_d[6'b00_0010];
@@ -303,18 +300,13 @@ module ID(
     assign inst_lhu     = op_d[6'b10_0101];
     assign inst_sb      = op_d[6'b10_1000];
     assign inst_sh      = op_d[6'b10_1001];
-
-    //match
-    assign inst_march      = op_d[6'b01_1100]&sa==5'b11100&func_d[6'b11_0111];;
-
     //取操作数
     // rs to reg1
     assign sel_alu_src1[0] = inst_ori | inst_addiu | inst_subu|inst_sub|inst_addu |inst_add|inst_addi|
                             inst_or|inst_and |inst_andi |inst_xori |inst_nor |inst_srav |inst_srlv | 
                             inst_lw |inst_sllv |inst_sw|inst_xor|inst_slt|inst_slti|inst_jalr |
                             inst_sltiu|inst_sltu| inst_div  | inst_divu | inst_mult | inst_multu|inst_mthi | inst_mtlo|
-                            inst_sh | inst_sb | inst_lhu | inst_lh | inst_lbu |  inst_lb |
-                            inst_march;
+                            inst_sh | inst_sb | inst_lhu | inst_lh | inst_lbu |  inst_lb ;
 
     // pc to reg1
     assign sel_alu_src1[1] = inst_jal|
@@ -329,8 +321,7 @@ module ID(
                              inst_srlv | inst_srav |inst_sra | inst_srl |
                              inst_and |inst_or|inst_nor |inst_xor|inst_sub|
                             inst_slt|inst_sltu|inst_div  | inst_divu | inst_mult | inst_multu|
-                            inst_sh | inst_sb | inst_lhu | inst_lh | inst_lbu |  inst_lb |
-                            inst_march;
+                            inst_sh | inst_sb | inst_lhu | inst_lh | inst_lbu |  inst_lb ;
     
     // imm_sign_extend to reg2
     assign sel_alu_src2[1] = inst_lui | inst_addiu|inst_addi|inst_lw|inst_slti|inst_sltiu|inst_sw|
@@ -359,18 +350,12 @@ module ID(
     assign op_sra = inst_sra | inst_srav;
     assign op_lui = inst_lui;
 
-    //match
-    wire op_match;
-    assign op_match=inst_match;
-
     assign alu_op = {op_add, op_sub, op_slt, op_sltu,
                      op_and, op_nor, op_or, op_xor,
-                     op_sll, op_srl, op_sra, op_lui,
-                     //match
-                     op_match};
+                     op_sll, op_srl, op_sra, op_lui};
 
 
-    //存储器相关
+    //存储器相�?
     // load and store enable
     assign data_ram_en = inst_lw |inst_sw| inst_sh | inst_sb | inst_lhu | inst_lh | inst_lbu|inst_lb;
 
@@ -395,7 +380,7 @@ module ID(
     assign hi_write = inst_mthi;                            
     assign lo_write = inst_mtlo;       
 
-    //写使能信号
+    //写使能信�?
     // regfile store enable
     assign rf_we = inst_ori | inst_lui | inst_addiu|inst_addi|inst_subu|inst_sub|inst_jal|inst_addu|inst_add|inst_sll|
                    inst_or| inst_and |inst_andi | inst_xori |inst_nor | inst_sllv |inst_srlv | inst_srav |

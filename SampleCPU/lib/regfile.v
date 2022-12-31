@@ -16,15 +16,15 @@ module regfile(
     input wire [`WB_TO_ID_WD-1:0] wb_to_id_bus,
     
     //hilo 读写
-    input wire [67:0] hl_bus,
+    input wire [`HI_LO_WD-1:0] hi_lo_bus,
     
-    //hilo输出线
+    //hilo输出�?
     output wire [31:0] hi_out,
     output wire [31:0] lo_out
 );
     reg [31:0] reg_array [31:0];
-    reg [31:0] reg_hi;//定义hi寄存器 
-    reg [31:0] reg_lo;//定义lo寄存器
+    reg [31:0] reg_hi;//定义hi寄存�? 
+    reg [31:0] reg_lo;//定义lo寄存�?
     // write
     always @ (posedge clk) begin
         if (we && waddr!=5'b0) begin
@@ -99,7 +99,7 @@ module regfile(
         lo_read,
         hi_i,
         lo_i
-    }=hl_bus;
+    }=hi_lo_bus;
 
     //hi_lo write
     always @ (posedge clk) begin
