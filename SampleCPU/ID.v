@@ -74,7 +74,7 @@ module ID(
         end
     end
 
-    // //延迟�?
+    // //延迟槽
     // always @ (posedge clk) begin
     //     inst_stall_en<=`NoStop;
     //     inst_stall<=32'b0;
@@ -163,11 +163,11 @@ module ID(
     //译码
     assign opcode = inst[31:26];//运算操作
     assign rs = inst[25:21];//源寄存器
-    assign rt = inst[20:16];//�?的寄存器
+    assign rt = inst[20:16];//目的寄存器
     assign rd = inst[15:11];
     assign sa = inst[10:6];
     assign func = inst[5:0];
-    assign imm = inst[15:0];//立即�?
+    assign imm = inst[15:0];//立即数
     assign instr_index = inst[25:0];
     assign code = inst[25:6];
     assign base = inst[25:21];
@@ -177,7 +177,7 @@ module ID(
 
 
     wire inst_ori, inst_lui, inst_addiu, inst_beq;
-    //新�?�指�?
+    //新增指令
     wire inst_subu;
     wire inst_sub;
     wire inst_j;
@@ -238,7 +238,7 @@ module ID(
     assign inst_addiu   = op_d[6'b00_1001];
     assign inst_beq     = op_d[6'b00_0100];
 
-    //新�?�指�?
+    //新增指令
     assign inst_subu    = op_d[6'b00_0000]&sa==5'b00000&func_d[6'b10_0011];
     assign inst_sub     = op_d[6'b00_0000] & func_d[6'b10_0010];
     assign inst_j       = op_d[6'b00_0010];
@@ -355,7 +355,7 @@ module ID(
                      op_sll, op_srl, op_sra, op_lui};
 
 
-    //存储器相�?
+    //存储器相关
     // load and store enable
     assign data_ram_en = inst_lw |inst_sw| inst_sh | inst_sb | inst_lhu | inst_lh | inst_lbu|inst_lb;
 
@@ -380,7 +380,7 @@ module ID(
     assign hi_write = inst_mthi;                            
     assign lo_write = inst_mtlo;       
 
-    //写使能信�?
+    //写使能信号
     // regfile store enable
     assign rf_we = inst_ori | inst_lui | inst_addiu|inst_addi|inst_subu|inst_sub|inst_jal|inst_addu|inst_add|inst_sll|
                    inst_or| inst_and |inst_andi | inst_xori |inst_nor | inst_sllv |inst_srlv | inst_srav |
